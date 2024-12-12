@@ -1,0 +1,32 @@
+\documentclass[12pt]{article}  % Defines the document class and font size
+\usepackage[utf8]{inputenc}    % Allows UTF-8 encoding
+\usepackage{amsmath}           % Provides advanced math capabilities
+\usepackage{graphicx}          % For including graphics
+
+\title{My First LaTeX Document}  % Title of the document
+\author{Your Name}              % Author's name
+\date{\today}                   % Current date
+
+\begin{document}
+
+\maketitle  % Creates the title section
+
+\section{Introduction}  % Creates a section
+This is a simple LaTeX document. You can write your text here. 
+LaTeX is widely used for documents that include mathematical equations, such as:
+\[
+E = mc^2
+\]
+
+\section{Adding a Figure}
+To include a figure, use the following syntax:
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{example-image} % Replace with your image file
+    \caption{An example image.}
+\end{figure}
+
+\section{Conclusion}
+LaTeX is a powerful tool for creating professional-quality documents. You can create sections, add figures, and include complex mathematical expressions easily.
+
+\end{document}
