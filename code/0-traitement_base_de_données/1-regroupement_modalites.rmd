@@ -59,3 +59,4 @@ variables_sous_representees_pourcentage <- as.numeric(na.omit(variables_sous_rep
 barplot(variables_sous_representees_pourcentage)
 
 ```
+# Le barplot est peut être pas optial, charte de chaleur serait peut être mieux
