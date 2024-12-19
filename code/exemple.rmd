@@ -12,6 +12,7 @@ Les blocs de code sont exécutés et leur résultat affiché, par exemple :
 
 ```{r}
 mean(mtcars$mpg)
+median(mtcars$mpg)
 ```
 
 ## Graphiques

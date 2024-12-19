@@ -1,0 +1,46 @@
+---
+title: "Détection des valeurs manquantes"
+---
+# Manque ajouter le nom des variables dans le graphique ainsi que dans les valeurs où le test est True
+
+*L'objectif de cette séction est de détecter les variables où il y a plus du 85 % de données manquantes.*
+
+On commence par télécharger les données et la création de quelques variabes utiles: 
+```{r}
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024/")
+donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+
+n <- ncol(donnees)
+num_individus <- nrow(donnees) 
+```
+
+
+Puis on enregistre les variables avec des valeurs manquantes superieures à 85 %.
+```{r}
+modalites_manquantes <- logical(n) 
+
+for (i in 1:n) {
+    modalites_manquantes[i] <- sum(is.na(donnees[, i])) / num_individus > 0.15
+}
+any(modalites_manquantes)
+```
+Il n'y a pas de données manquantes à plus de 85%. 
+On s'intèresse à la répartition des variables manquantes dans es autres modalités.
+```{r}
+modalites_manquantes_pourcentage <- numeric(n)
+for (i in 1:n){
+    modalites_manquantes_pourcentage[i] <- 100 * (sum(is.na(donnees[,i]))/num_individus)
+
+}
+
+grad_couleurs <- colorRampPalette(c("green", "yellow", "red"))(15)
+couleurs <- grad_couleurs[ceiling(modalites_manquantes_pourcentage)]
+
+barplot(modalites_manquantes_pourcentage, 
+        main = "Percentage des données manquantes par variable",
+        ylab = "Percentage",
+        xlab = "Variable",
+        ylim = c(0, 16),
+        col = couleurs)
+
+```
