@@ -1,5 +1,18 @@
 # Description du sujet
-Décrirere
+Décrirere A FAIRE
+
+# Installation Rapide
+Vous allez dans github et clonnez facilement le projet et installez tout ce qui est proposez par Vscode. 
+Faut installer R sur votre machine [https://cran.r-project.org/bin/windows/base/](https://cran.r-project.org/bin/windows/base/)
+
+Sur R, il va falloir installer les libreries suivantes afin d'executer le R Markdown.
+  - install.packages("rmarkdown")
+  - install.packages("knitr")
+  - install.packages("tinytex")
+
+
+Finallement installez padoc : [https://pandoc.org/installing.html](https://pandoc.org/installing.html)
+Et normalment tout est bon :). Sinon lisez la suite mais flemme
 # Mise en route de Rmarkdown sur VScode
 
 Ce guide détaille toutes les étapes nécessaires pour configurer votre ordinateur Windows afin d'exécuter des fichiers R Markdown en utilisant Visual Studio Code (VSCode).
