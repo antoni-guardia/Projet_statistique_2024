@@ -3,8 +3,6 @@ title: "Détection des modalités sous-representés"
 ---
 # Manque ajouter le nom des variables dans le graphique ainsi que dans les valeurs où le test est True
 
-*L'objectif de cette séction est de détecter les modalités qui sont sous-representés.*
-
 On commence par télécharger les données et la création de quelques variabes utiles: 
 ```{r}
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024/")
@@ -13,50 +11,70 @@ n <- ncol(donnees)
 num_individus <- nrow(donnees)
 
 n_factors <- 0
-
+est_factor <- logical(n)
 for (i in 1:n){
+    est_factor[i] <- FALSE
     if(is.factor(donnees[, i])){
         n_factors <- n_factors + 1
+        est_factor[i] <- TRUE
     }
 }
 
 n_factors # nombre de variables qui sont des factors
+noms_factors <- colnames(donnees[est_factor])
 ```
 
 
 Puis on enregistre les modalités avec des modalités dont la répresentation est inferiuere à 15 %.
 ```{r}
 variables_sous_representees <- logical(n_factors)
-
+j <- 1
 for (i in 1:n) {
     if(is.factor(donnees[, i])){
 
         rep_modalites <- prop.table(table(donnees[, i]))        
 
-        variables_sous_representees[i] <- any(rep_modalites < 0.15)
+        variables_sous_representees[j] <- any(rep_modalites < 0.15)
+        j <- j + 1
 
     }
 }
-variables_sous_representees <- as.numeric(na.omit(variables_sous_representees))
 any(variables_sous_representees)
 ```
-Il n'y a pas de variables avec des modalités sous representés.
+Il y a au moins une des variables avec au moins une modalités sous representés.
+```{r}
+noms_factors[variables_sous_representees]
+v_interet <- noms_factors[variables_sous_representees]
+
+```
+Il y a qu'une seule variable avec une modalité dont la répresentation est inferiuere à 15%.
+```{r}
+prop.table(table(donnees[v_interet]))
+```
+Il s'agit d'une modalité à 14% de répresentation dans une variable à 5 modalités qui semblent être biens réparties, il y a donc surement pas d'interet à faire des regroupements.
 
 On s'intèresse à la répartition de la modalité la moins representé dans nos variables factors.
 ```{r}
 variables_sous_representees_pourcentage <- numeric(n_factors)
-
+j <- 1
 for (i in 1:n) {
     if(is.factor(donnees[, i])){
 
         rep_modalites <- prop.table(table(donnees[, i]))        
 
-        variables_sous_representees_pourcentage[i] <- min(na.omit(rep_modalites)) * 100
-
+        variables_sous_representees_pourcentage[j] <- min(rep_modalites)
+        j <- j + 1
     }
 }
-variables_sous_representees_pourcentage <- as.numeric(na.omit(variables_sous_representees_pourcentage))
-barplot(variables_sous_representees_pourcentage)
+ordre <- order(variables_sous_representees_pourcentage)
+couleurs <- ifelse(variables_sous_representees_pourcentage < 0.15, "red",
+          ifelse(variables_sous_representees_pourcentage < 0.16, "orange",
+          ifelse(variables_sous_representees_pourcentage < 0.18, "yellow", "green")))
 
+barplot(variables_sous_representees_pourcentage[ordre],
+        col=couleurs[ordre],
+        border=NA,
+        main="Répartition de la modalité la moins représenté par variables",
+        xlab="Variable",
+        ylab="Pourcentage")
 ```
-# Le barplot est peut être pas optial, charte de chaleur serait peut être mieux
