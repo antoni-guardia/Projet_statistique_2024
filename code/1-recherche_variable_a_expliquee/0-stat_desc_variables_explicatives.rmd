@@ -74,3 +74,4 @@ corrplot(M,
 ```
 
 On remarque que les seules variables qui semblent avoir une correlation sont la fréquence d'éternouements en ENG avec la fréquence de toux en ENG.
+Faire en log, plus de correlations apparantes.
