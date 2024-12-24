@@ -1,0 +1,76 @@
+---
+title: "Statistique descriptive des variables à expliquée"
+---
+
+On commence par télécharger les variables à expliquée.
+```{r}
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024/")
+donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
+summary(var_a_expliquee)
+```
+On remarque qu'il y a trés peu de valeurs manquantes, et que celles si sot corrélés (mettre en evidance). Regardons la répartition des valeurs.
+```{r}
+par(mfrow = c(2, 2))
+
+for (i in 1:4) {
+    dens <- density(na.omit(var_a_expliquee[,i]), bw = "ucv")
+
+    plot(
+        dens,                
+        main = names(var_a_expliquee)[i],
+        xlab = "Valeur",                   
+        ylab = "Densité",                 
+        col = "black",                    
+        lwd = 2                 
+    )
+}
+par(mfrow = c(1, 1))
+
+```
+On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Interessons nous auc corrélations des variables.
+
+```{r, fig.width=10, fig.height=15}
+#install.packages("gplots")
+library("gplots")
+library(paletteer)
+
+M <- as.matrix(var_a_expliquee)
+library(gplots)
+sum(na.omit(M) == 0)
+
+color_palette <-  as.vector(paletteer::paletteer_d("colorBlindness::Blue2DarkOrange12Steps"))
+M_log <- log(0.75*M + 1)
+
+heatmap.2(M_log,
+          scale = "column",
+          trace="none",         
+          symbreaks = FALSE,         
+          na.color = "black",          
+          Colv = FALSE,              
+          Rowv = FALSE,
+          # cellnote = round(M, 2),         
+          dendrogram = "none",        
+          margins = c(12, 3),          
+          col = color_palette)
+
+```
+
+A comentée, utilisation echelle log ca plus adapté (valeurs extremes nuissent a l'interpretaion graph sinon)
+
+
+```{r}
+library(corrplot)
+M <- cor(na.omit(var_a_expliquee))
+corrplot(M,
+         # method = 'circles',
+         order="AOE",
+         addCoef.col = 'black',
+         tl.pos = 'd',
+         tl.col = 'black',
+         type = 'upper'
+        )
+
+```
+
+On remarque que les seules variables qui semblent avoir une correlation sont la fréquence d'éternouements en ENG avec la fréquence de toux en ENG.
