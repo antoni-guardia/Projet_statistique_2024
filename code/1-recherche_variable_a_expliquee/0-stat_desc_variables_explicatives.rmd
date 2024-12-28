@@ -40,9 +40,17 @@ library(gplots)
 sum(na.omit(M) == 0)
 
 color_palette <-  as.vector(paletteer::paletteer_d("colorBlindness::Blue2DarkOrange12Steps"))
-M_log <- log(0.75*M + 1)
+M_log <- log(M + 1)
 
-heatmap.2(M_log,
+has_na <- apply(M_log, 1, function(x) any(is.na(x)))
+M_log_na <- M_log[has_na, ]       # lignes avec NA
+M_log_non_na <- M_log[!has_na, ]  # lignes sans NA
+dist_matrix <- dist(M_log_non_na, method = "manhattan")
+hc <- hclust(dist_matrix, method = "mcquitty")
+M_log_non_na <- M_log_non_na[hc$order, ]
+M_log_ordered <- rbind(M_log_na, M_log_non_na)
+
+heatmap.2(M_log_ordered,
           scale = "column",
           trace="none",         
           symbreaks = FALSE,         
@@ -51,13 +59,14 @@ heatmap.2(M_log,
           Rowv = FALSE,
           # cellnote = round(M, 2),         
           dendrogram = "none",        
-          margins = c(12, 3),          
-          col = color_palette)
+          margins = c(12, 1),
+          col = color_palette,
+)
 
 ```
 
 A comentée, utilisation echelle log ca plus adapté (valeurs extremes nuissent a l'interpretaion graph sinon)
-
+On remarque que les valeurs manquantes sont en paires.
 
 ```{r}
 library(corrplot)
@@ -75,3 +84,17 @@ corrplot(M,
 
 On remarque que les seules variables qui semblent avoir une correlation sont la fréquence d'éternouements en ENG avec la fréquence de toux en ENG.
 Faire en log, plus de correlations apparantes.
+
+```{r}
+library(corrplot)
+M <- cor(na.omit(M_log))
+corrplot(M,
+         # method = 'circles',
+         order="AOE",
+         addCoef.col = 'black',
+         tl.pos = 'd',
+         tl.col = 'black',
+         type = 'upper'
+        )
+
+```
