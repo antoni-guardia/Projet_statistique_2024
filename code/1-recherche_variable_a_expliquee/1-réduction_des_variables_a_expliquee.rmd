@@ -1,0 +1,12 @@
+---
+title: "Réduction des variables à expliquée"
+---
+
+On commence par télécharger les variables à expliquée.
+```{r}
+# install.packages("dotenv")
+library(dotenv)
+setwd(Sys.getenv("path_bdd"))
+donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
+```

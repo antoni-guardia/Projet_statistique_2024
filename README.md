@@ -1,7 +1,45 @@
 # Description du sujet
-Décrirere A FAIRE
+TODO
+---
+---
 
-# Installation Rapide
+# Configuration de l'environnement pour le projet
+
+## Étape 1 : Créer un fichier `.env`
+1. À la racine du projet, créez un fichier nommé `.env`.
+2. Ajoutez-y la ligne suivante en remplaçant `path_bdd=/chemin/vers/votre/base_de_donnees` par le chemin local vers votre base de données.
+
+## Étape 2 : Installer la librairie `dotenv`
+Pour utiliser le fichier `.env` dans R, vous devez installer la librairie `dotenv`. Si elle n'est pas déjà installée, exécutez la commande suivante dans R :
+```R
+install.packages("dotenv")
+```
+# Gestion des dépendances avec `renv`
+
+Ce projet utilise le package `renv` pour gérer les dépendances. Cela garantit que tous les membres de l'équipe travaillent avec les mêmes versions des packages R nécessaires au projet.
+
+### Étape 1 : Installer `renv`
+Assurez-vous que le package `renv` est installé sur votre machine :
+```R
+install.packages("renv")
+```
+### Étape 2 : Restaurer l'environement
+Restaurez l'environnement pour installer les dépendances nécessaires :
+```R
+renv::restore()
+```
+### Étape 3 : Ajouter de nouvelles dépendances
+
+Lorsque vous ajoutez un nouveau package au projet, installez-le normalement avec `install.packages()`. Ensuite, synchronisez l'environnement avec :
+```R
+renv::snapshot()
+```
+
+--- 
+---
+
+# Installation R sur Vscode
+## Mise en route
 Vous allez dans github et clonnez facilement le projet et installez tout ce qui est proposez par Vscode. 
 Faut installer R sur votre machine [https://cran.r-project.org/bin/windows/base/](https://cran.r-project.org/bin/windows/base/)
 
@@ -12,60 +50,7 @@ Sur R, il va falloir installer les libreries suivantes afin d'executer le R Mark
 
 
 Finallement installez padoc : [https://pandoc.org/installing.html](https://pandoc.org/installing.html)
-Et normalment tout est bon :). Sinon lisez la suite mais flemme
-# Mise en route de Rmarkdown sur VScode
-
-Ce guide détaille toutes les étapes nécessaires pour configurer votre ordinateur Windows afin d'exécuter des fichiers R Markdown en utilisant Visual Studio Code (VSCode).
-
----
-
-## Prérequis
-1. **R** : Installer le langage R.
-2. **Visual Studio Code** : Installer VSCode avec les extensions nécessaires.
-3. **Pandoc** : S'assurer que Pandoc est installé.
-
----
-
-## Étapes d'Installation
-
-### 1. Installer R
-- Téléchargez et installez R depuis le site officiel :
-  [https://cran.r-project.org/](https://cran.r-project.org/)
-- Suivez les instructions pour l'installation.
-
-### 2. Installer Visual Studio Code
-- Téléchargez et installez VSCode depuis le site officiel :
-  [https://code.visualstudio.com/](https://code.visualstudio.com/)
-- Installez l'extension **R** (Ikuyadeu)
-
-### 3. Installer Pandoc
-- Téléchargez et installez Pandoc depuis :
-  [https://pandoc.org/installing.html](https://pandoc.org/installing.html)
-- Ajoutez Pandoc à votre variable `PATH` si cela n'est pas fait automatiquement.
-
-### 4. Configurer les Extensions VSCode
-- Configurez l'extension R pour qu'elle reconnaisse l'installation de R :
-  - Allez dans les paramètres (`Ctrl+,`), recherchez "R Path" et ajoutez le chemin de l'exécutable R (par exemple `C:\Program Files\R\R-4.x.x\bin\R.exe`).
-
-### 5. Installer les Packages R Nécessaires
-- Ouvrez une console R (ou la console intégrée dans VSCode) et exécutez :
-  ```R
-  install.packages("rmarkdown")
-  install.packages("knitr")
-  ```
-
----
-
-## Vérifications
-
-### Vérifier l'Installation de Pandoc
-- Ouvrez une console et exécutez :
-  ```bash
-  pandoc --version
-  ```
-- Si Pandoc n'est pas trouvé, ajoutez son chemin à la variable `PATH`.
-
----
+Et normalment tout est bon, sinon, n'hésitez pas à m'envoyer un message.
 
 ## Génération d'un Document R Markdown
 
@@ -82,12 +67,14 @@ Ce guide détaille toutes les étapes nécessaires pour configurer votre ordinat
 3. **Résolution des Erreurs** :
    - Si des erreurs surviennent, vérifiez que toutes les dépendances sont installées.
 
----
 ## Ressources Supplémentaires
 - Documentation R Markdown : [https://rmarkdown.rstudio.com/](https://rmarkdown.rstudio.com/)
 - Support VSCode : [https://code.visualstudio.com/docs](https://code.visualstudio.com/docs)
 
-## Mise en Route de LaTeX sur VSCode
+---
+---
+
+# Mise en Route de LaTeX sur VSCode
 
 Bien que LaTeX ne soit pas requis pour exécuter les fichiers R Markdown, si vous souhaitez générer des documents PDF ou tirer parti des fonctionnalités avancées de LaTeX, voici comment le configurer :
 
@@ -110,5 +97,3 @@ Bien que LaTeX ne soit pas requis pour exécuter les fichiers R Markdown, si vou
   ```bash
   Rscript -e "rmarkdown::render('votre_fichier.Rmd')"
   ```
-
----

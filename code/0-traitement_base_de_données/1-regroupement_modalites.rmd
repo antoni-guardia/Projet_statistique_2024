@@ -5,8 +5,11 @@ title: "Détection des modalités sous-representés"
 
 On commence par télécharger les données et la création de quelques variabes utiles: 
 ```{r}
-setwd("/home/rogerbernat/Documents/Projet_statistique_2024/")
+# install.packages("dotenv")
+library(dotenv)
+setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+
 n <- ncol(donnees)
 num_individus <- nrow(donnees)
 
