@@ -9,4 +9,15 @@ library(dotenv)
 setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
+# création des variables log
+for (col in names(var_a_expliquee)) {
+  var_a_expliquee[[paste0("log_", col)]] <- log(var_a_expliquee[[col]] + 1)
+}
+pairs(var_a_expliquee)
+summary(var_a_expliquee)
+```
+Régression linéaire: 
+```{r}
+reg_1 <- lm(log_ENG_Tx_freq ~ . - ENG_Tx_freq , var_a_expliquee)
+summary(reg_1)
 ```

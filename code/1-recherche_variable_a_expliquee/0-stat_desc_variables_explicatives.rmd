@@ -42,7 +42,7 @@ library(gplots)
 sum(na.omit(M) == 0)
 
 color_palette <-  as.vector(paletteer::paletteer_d("colorBlindness::Blue2DarkOrange12Steps"))
-M_log <- log(M + 1)
+M_log <- log(M+1)
 
 has_na <- apply(M_log, 1, function(x) any(is.na(x)))
 M_log_na <- M_log[has_na, ]       # lignes avec NA
