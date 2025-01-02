@@ -6,7 +6,7 @@ TODO
 # Configuration de l'environnement pour le projet
 
 ## Étape 1 : Créer un fichier `.env`
-1. À la racine du projet, créez un fichier nommé `.env`.
+1. Dans chaque séction du projet, créez un fichier nommé `.env`.
 2. Ajoutez-y la ligne suivante en remplaçant `path_bdd=/chemin/vers/votre/base_de_donnees` par le chemin local vers votre base de données.
 
 ## Étape 2 : Installer la librairie `dotenv`
