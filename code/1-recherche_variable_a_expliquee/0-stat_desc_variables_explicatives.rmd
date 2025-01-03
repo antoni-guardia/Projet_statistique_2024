@@ -19,12 +19,12 @@ for (i in 1:4) {
     dens <- density(na.omit(var_a_expliquee[,i]), bw = "ucv")
 
     plot(
-        dens,                
+        dens,
         main = names(var_a_expliquee)[i],
-        xlab = "Valeur",                   
-        ylab = "Densité",                 
-        col = "black",                    
-        lwd = 2                 
+        xlab = "Valeur",
+        ylab = "Densité",
+        col = "black",
+        lwd = 2
     )
 }
 par(mfrow = c(1, 1))
@@ -54,13 +54,13 @@ M_log_ordered <- rbind(M_log_na, M_log_non_na)
 
 heatmap.2(M_log_ordered,
           scale = "column",
-          trace="none",         
-          symbreaks = FALSE,         
-          na.color = "black",          
-          Colv = FALSE,              
+          trace="none",
+          symbreaks = FALSE,
+          na.color = "black",
+          Colv = FALSE,
           Rowv = FALSE,
-          # cellnote = round(M, 2),         
-          dendrogram = "none",        
+          # cellnote = round(M, 2),
+          dendrogram = "none",
           margins = c(12, 1),
           col = color_palette,
 )
