@@ -1,6 +1,6 @@
 marius <- plusbgquetoni
 Revoir les noms données quand Toni parle de variable/modalité.
-Garder en tête la variable avec une modalité qui représente 14% de la population
+Garder en tête la variable avec une modalité qui représente que 14% de la population
 Peut-être faire 36 / 32 / 32 au lieu de 14 / 22 / 32 / 16 / 16
 Orthographe du code
 Faire les mettre en évidence et autres notes dans le code
