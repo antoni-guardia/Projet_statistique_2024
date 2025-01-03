@@ -6,7 +6,6 @@ title: "Détection des valeurs manquantes"
 
 On commence par télécharger les données puis on crée quelques variabes utiles:
 ```{r}
-# install.packages("dotenv")
 library(dotenv)
 setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")

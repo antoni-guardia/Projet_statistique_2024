@@ -2,8 +2,4 @@
 1.Dictionnaires_Variables
 base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData
 .env
-<<<<<<< HEAD
 init.R
-=======
-init_dotenv.R
->>>>>>> ce5c00d35cb34cdbd88729167a0b657bf1c40f41
