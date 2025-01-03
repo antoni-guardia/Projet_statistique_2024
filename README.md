@@ -35,12 +35,12 @@ Lorsque vous ajoutez un nouveau package au projet, installez-le normalement avec
 renv::snapshot()
 ```
 
---- 
+---
 ---
 
 # Installation R sur Vscode
 ## Mise en route
-Vous allez dans github et clonnez facilement le projet et installez tout ce qui est proposez par Vscode. 
+Vous allez dans github et clonnez facilement le projet et installez tout ce qui est proposé par Vscode.
 Faut installer R sur votre machine [https://cran.r-project.org/bin/windows/base/](https://cran.r-project.org/bin/windows/base/)
 
 Sur R, il va falloir installer les libreries suivantes afin d'executer le R Markdown.
