@@ -2,9 +2,9 @@
 title: "Détection des valeurs manquantes"
 ---
 
-*L'objectif de cette séction est de détecter les variables où il y a plus du 85 % de données manquantes.*
+*L'objectif de cette section est de détecter les variables où il y a plus de 85 % de données manquantes.*
 
-On commence par télécharger les données et la création de quelques variabes utiles:
+On commence par télécharger les données puis on crée quelques variabes utiles:
 ```{r}
 # install.packages("dotenv")
 library(dotenv)
@@ -27,7 +27,7 @@ for (i in 1:n) {
 any(modalites_manquantes)
 ```
 Il n'y a pas de données manquantes à plus de 85%.
-On s'intèresse à la répartition des variables manquantes dans es autres modalités.
+On s'intéresse à la répartition des variables manquantes dans les autres modalités.
 ```{r large-barplot, fig.width=12, fig.height=8}
 modalites_manquantes_pourcentage <- numeric(n)
 for (i in 1:n){
@@ -59,4 +59,4 @@ barplot(modalites_filtrees[ordre],
 par(mar = c(5, 4, 4, 2))
 
 ```
-On remarque que les données avec le plus de données manquantes ce sont celles qui ont un lien avec l'alimentation, il existe peut-être une corrélation (A mettre en evidance ???).
+On remarque que les données avec le plus de données manquantes sont celles qui ont un lien avec l'alimentation, il existe peut-être une corrélation (A mettre en evidance ???).

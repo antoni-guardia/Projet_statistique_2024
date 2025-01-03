@@ -1,8 +1,8 @@
 ---
-title: "Statistique descriptive des variables à expliquée"
+title: "Statistique descriptive des variables à expliquer"
 ---
 
-On commence par télécharger les variables à expliquée.
+On commence par télécharger les variables à expliquer.
 ```{r}
 #install.packages(c("dotenv", "jsonlite", "yaml"))
 library(dotenv)
@@ -11,7 +11,7 @@ donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
 summary(var_a_expliquee)
 ```
-On remarque qu'il y a trés peu de valeurs manquantes, et que celles si sot corrélés (mettre en evidance). Regardons la répartition des valeurs.
+On remarque qu'il y a très peu de valeurs manquantes, et que celles si sont corrélés (mettre en évidence). Regardons la répartition des valeurs.
 ```{r}
 par(mfrow = c(2, 2))
 
@@ -30,7 +30,7 @@ for (i in 1:4) {
 par(mfrow = c(1, 1))
 
 ```
-On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Interessons nous auc corrélations des variables.
+On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Intéressons nous aux corrélations des variables.
 
 ```{r, fig.width=10, fig.height=15}
 #install.packages("gplots")
@@ -67,7 +67,7 @@ heatmap.2(M_log_ordered,
 
 ```
 
-A comentée, utilisation echelle log ca plus adapté (valeurs extremes nuissent a l'interpretaion graph sinon)
+À comenter, utilisation échelle log car plus adapté (valeurs extrêmes nuisent à l'interpretaion du graph sinon)
 On remarque que les valeurs manquantes sont en paires.
 
 ```{r}
@@ -84,8 +84,8 @@ corrplot(M,
 
 ```
 
-On remarque que les seules variables qui semblent avoir une correlation sont la fréquence d'éternouements en ENG avec la fréquence de toux en ENG.
-Faire en log, plus de correlations apparantes.
+On remarque que les seules variables qui semblent avoir une corrélation sont la fréquence d'éternuements en ENG avec la fréquence de toux en ENG.
+Faire en log, plus de corrélations apparantes.
 
 ```{r}
 library(corrplot)
