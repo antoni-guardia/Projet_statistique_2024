@@ -2,38 +2,14 @@
 title: "Statistique descriptive des variables à expliquée"
 ---
 
-On commence par télécharger les variables à expliquée.
-```{r}
-#install.packages(c("dotenv", "jsonlite", "yaml"))
+On commence par télécharger les variables à expliquer.
+```{r, fig.width=10, fig.height=15}
 library(dotenv)
 setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
 summary(var_a_expliquee)
-```
-On remarque qu'il y a trés peu de valeurs manquantes, et que celles si sot corrélés (mettre en evidance). Regardons la répartition des valeurs.
-```{r}
-par(mfrow = c(2, 2))
 
-for (i in 1:4) {
-    dens <- density(na.omit(var_a_expliquee[,i]), bw = "ucv")
-
-    plot(
-        dens,                
-        main = names(var_a_expliquee)[i],
-        xlab = "Valeur",                   
-        ylab = "Densité",                 
-        col = "black",                    
-        lwd = 2                 
-    )
-}
-par(mfrow = c(1, 1))
-
-```
-On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Interessons nous auc corrélations des variables.
-
-```{r, fig.width=10, fig.height=15}
-#install.packages("gplots")
 library("gplots")
 library(paletteer)
 
@@ -66,9 +42,28 @@ heatmap.2(M_log_ordered,
 )
 
 ```
+On remarque qu'il y a très peu de valeurs manquantes, et que celles si sont corrélés entre elles. Regardons la répartition des valeurs.
+```{r}
+par(mfrow = c(2, 2))
 
-A comentée, utilisation echelle log ca plus adapté (valeurs extremes nuissent a l'interpretaion graph sinon)
-On remarque que les valeurs manquantes sont en paires.
+for (i in 1:4) {
+    dens <- density(na.omit(var_a_expliquee[,i]), bw = "ucv")
+
+    plot(
+        dens,                
+        main = names(var_a_expliquee)[i],
+        xlab = "Valeur",                   
+        ylab = "Densité",                 
+        col = "black",                    
+        lwd = 2                 
+    )
+}
+par(mfrow = c(1, 1))
+pairs(var_a_expliquee)
+```
+
+
+On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Intéressons nous aux corrélations des variables.
 
 ```{r}
 library(corrplot)
@@ -85,7 +80,6 @@ corrplot(M,
 ```
 
 On remarque que les seules variables qui semblent avoir une correlation sont la fréquence d'éternouements en ENG avec la fréquence de toux en ENG.
-Faire en log, plus de correlations apparantes.
 
 ```{r}
 library(corrplot)
@@ -100,3 +94,4 @@ corrplot(M,
         )
 
 ```
+Observons que les corrélations entre les variables logarithmiques sont beaucoup plus significatives que celles entre les variables non transformées.

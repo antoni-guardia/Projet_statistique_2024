@@ -2,11 +2,10 @@
 title: "Détection des valeurs manquantes"
 ---
 
-*L'objectif de cette séction est de détecter les variables où il y a plus du 85 % de données manquantes.*
+*L'objectif de cette section est de détecter les variables où il y a plus de 85 % de données manquantes.*
 
-On commence par télécharger les données et la création de quelques variabes utiles: 
+On commence par télécharger les données puis on crée quelques variabes utiles:
 ```{r}
-# install.packages("dotenv")
 library(dotenv)
 setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
@@ -19,15 +18,15 @@ noms_variables <- colnames(donnees)
 
 Puis on enregistre les variables avec des valeurs manquantes superieures à 85 %.
 ```{r}
-modalites_manquantes <- logical(n) 
+modalites_manquantes <- logical(n)
 
 for (i in 1:n) {
     modalites_manquantes[i] <- sum(is.na(donnees[, i])) / num_individus > 0.15
 }
 any(modalites_manquantes)
 ```
-Il n'y a pas de données manquantes à plus de 85%. 
-On s'intèresse à la répartition des variables manquantes dans es autres modalités.
+Il n'y a pas de données manquantes à plus de 85%.
+On s'intéresse à la répartition des variables manquantes dans les autres modalités.
 ```{r large-barplot, fig.width=12, fig.height=8}
 modalites_manquantes_pourcentage <- numeric(n)
 for (i in 1:n){
@@ -45,7 +44,7 @@ couleurs <- ifelse(modalites_filtrees < 0.05, "green",
             ifelse(modalites_filtrees < 0.08, "yellow",
             ifelse(modalites_filtrees <= 0.15, "orange", "red")))
 par(mar = c(12, 4, 4, 2))
-barplot(modalites_filtrees[ordre], 
+barplot(modalites_filtrees[ordre],
         main = "Pourcentage des données manquantes par variable",
         ylab = "Pourcentage",
         ylim = c(0, 0.16),
@@ -59,4 +58,4 @@ barplot(modalites_filtrees[ordre],
 par(mar = c(5, 4, 4, 2))
 
 ```
-On remarque que les données avec le plus de données manquantes ce sont celles qui ont un lien avec l'alimentation, il existe peut-être une corrélation (A mettre en evidance ???).
+On remarque que les données avec le plus de données manquantes sont celles qui ont un lien avec l'alimentation.

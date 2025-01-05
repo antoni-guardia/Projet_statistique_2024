@@ -1,11 +1,9 @@
 ---
 title: "Détection des modalités sous-representés"
 ---
-# Manque ajouter le nom des variables dans le graphique ainsi que dans les valeurs où le test est True
 
-On commence par télécharger les données et la création de quelques variabes utiles: 
+On commence par télécharger les données et on crée quelques variables utiles:
 ```{r}
-# install.packages("dotenv")
 library(dotenv)
 setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
@@ -28,7 +26,7 @@ noms_factors <- colnames(donnees[est_factor])
 ```
 
 
-Puis on enregistre les modalités avec des modalités dont la répresentation est inferiuere à 15 %.
+Puis on enregistre les modalités avec des modalités dont la répresentation est inférieure à 15 %.
 ```{r}
 variables_sous_representees <- logical(n_factors)
 j <- 1
@@ -44,19 +42,21 @@ for (i in 1:n) {
 }
 any(variables_sous_representees)
 ```
-Il y a au moins une des variables avec au moins une modalités sous representés.
+Il y a au moins une des variables avec au moins une modalité sous representée.
 ```{r}
 noms_factors[variables_sous_representees]
 v_interet <- noms_factors[variables_sous_representees]
 
 ```
-Il y a qu'une seule variable avec une modalité dont la répresentation est inferiuere à 15%.
+Il y a qu'une seule variable avec une modalité dont la répresentation est inférieure à 15%.
 ```{r}
 prop.table(table(donnees[v_interet]))
 ```
-Il s'agit d'une modalité à 14% de répresentation dans une variable à 5 modalités qui semblent être biens réparties, il y a donc surement pas d'interet à faire des regroupements.
 
-On s'intèresse à la répartition de la modalité la moins representé dans nos variables factors.
+Il s'agit d'une modalité à 14% de répresentation dans une variable à 5 modalités qui semblent être biens réparties, il n'y a donc sûrement pas d'interêt à faire des regroupements.
+
+On s'intéresse à la répartition de la modalité la moins representée dans nos variables factors.
+
 ```{r}
 variables_sous_representees_pourcentage <- numeric(n_factors)
 j <- 1
@@ -81,3 +81,5 @@ barplot(variables_sous_representees_pourcentage[ordre],
         xlab="Variable",
         ylab="Pourcentage")
 ```
+
+La majorité des variables ont un seuil de représentation supérieur à 18 %, et une minorité ont un seuil entre 15 % et 16 %.
