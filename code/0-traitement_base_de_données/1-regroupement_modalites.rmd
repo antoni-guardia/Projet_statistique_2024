@@ -1,5 +1,5 @@
 ---
-title: "Détection des modalités sous-representés"
+title: "Détection des modalités sous-representées"
 ---
 
 On commence par télécharger les données et on crée quelques variables utiles:
@@ -33,7 +33,7 @@ j <- 1
 for (i in 1:n) {
     if(is.factor(donnees[, i])){
 
-        rep_modalites <- prop.table(table(donnees[, i]))        
+        rep_modalites <- prop.table(table(donnees[, i]))
 
         variables_sous_representees[j] <- any(rep_modalites < 0.15)
         j <- j + 1
@@ -52,18 +52,16 @@ Il y a qu'une seule variable avec une modalité dont la répresentation est inf�
 ```{r}
 prop.table(table(donnees[v_interet]))
 ```
-
 Il s'agit d'une modalité à 14% de répresentation dans une variable à 5 modalités qui semblent être biens réparties, il n'y a donc sûrement pas d'interêt à faire des regroupements.
 
 On s'intéresse à la répartition de la modalité la moins representée dans nos variables factors.
-
 ```{r}
 variables_sous_representees_pourcentage <- numeric(n_factors)
 j <- 1
 for (i in 1:n) {
     if(is.factor(donnees[, i])){
 
-        rep_modalites <- prop.table(table(donnees[, i]))        
+        rep_modalites <- prop.table(table(donnees[, i]))
 
         variables_sous_representees_pourcentage[j] <- min(rep_modalites)
         j <- j + 1

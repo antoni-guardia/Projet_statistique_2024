@@ -1,5 +1,5 @@
 ---
-title: "Statistique descriptive des variables à expliquée"
+title: "Statistique descriptive des variables à expliquer"
 ---
 
 On commence par télécharger les variables à expliquer.
@@ -9,7 +9,6 @@ setwd(Sys.getenv("path_bdd"))
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
 summary(var_a_expliquee)
-
 library("gplots")
 library(paletteer)
 
@@ -30,13 +29,13 @@ M_log_ordered <- rbind(M_log_na, M_log_non_na)
 
 heatmap.2(M_log_ordered,
           scale = "column",
-          trace="none",         
-          symbreaks = FALSE,         
-          na.color = "black",          
-          Colv = FALSE,              
+          trace="none",
+          symbreaks = FALSE,
+          na.color = "black",
+          Colv = FALSE,
           Rowv = FALSE,
-          # cellnote = round(M, 2),         
-          dendrogram = "none",        
+          # cellnote = round(M, 2),
+          dendrogram = "none",
           margins = c(12, 1),
           col = color_palette,
 )

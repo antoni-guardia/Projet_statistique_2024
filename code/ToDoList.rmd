@@ -1,0 +1,9 @@
+marius <- plusbgquetoni
+Revoir les noms données quand Toni parle de variable/modalité.
+Garder en tête la variable avec une modalité qui représente que 14% de la population
+Peut-être faire 36 / 32 / 32 au lieu de 14 / 22 / 32 / 16 / 16
+Orthographe du code
+Faire les mettre en évidence et autres notes dans le code
+Regarder les corrélations entre les variables à expliquer avec des graph
+Faire du clustering pour les variables à expliquer
+Faire les trucs demandés dans le compte-rendu
