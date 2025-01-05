@@ -58,4 +58,4 @@ barplot(modalites_filtrees[ordre],
 par(mar = c(5, 4, 4, 2))
 
 ```
-On remarque que les données avec le plus de données manquantes sont celles qui ont un lien avec l'alimentation, il existe peut-être une corrélation (A mettre en evidance ???).
+On remarque que les données avec le plus de données manquantes sont celles qui ont un lien avec l'alimentation.
