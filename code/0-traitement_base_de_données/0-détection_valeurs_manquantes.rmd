@@ -143,7 +143,6 @@ for (i in seq_along(table_fonction)) {
   # Ajouter chaque graphique à la liste
   plot_list[[i]] <- p
 }
-
 # Afficher les graphiques dans une grille 4x4
 grid.arrange(grobs = plot_list, ncol = 4)
 ```
