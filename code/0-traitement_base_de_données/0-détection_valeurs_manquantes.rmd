@@ -59,3 +59,94 @@ par(mar = c(5, 4, 4, 2))
 
 ```
 On remarque que les données avec le plus de données manquantes sont celles qui ont un lien avec l'alimentation.
+
+On s'intéresse maintenant aux données numériques.
+On crée un dataframe contenant seulement les variables numériques.
+Et on compte le nmobre de valeurs unique pour chaque variables.
+```{r}
+numeric_columns <- sapply(donnees, is.numeric)
+df_numerique <- donnees[, numeric_columns]
+n_unique_values <- function(x) {
+  length(unique(x))
+}
+unique_counts <- sapply(df_numerique, n_unique_values)
+print(unique_counts)
+```
+
+On s'intéresse seulement aux variables ayant moins de 6 valeurs différentes.
+Ce sont des variables numériques potentiellement catégorielles que l'on pourrait convertir en factor.
+Puis
+```{r}
+unique_counts[unique_counts < 6] # limite arbitrairement fixée à 6.
+cols_to_analyze <- names(unique_counts[unique_counts < 6])
+cols_to_analyze
+df_numerique <- df_numerique[cols_to_analyze]
+```
+on regarde le pourcentage d'apparition de la valeure la plus présente.
+On supprime les variables pour lesquelles cette fréquence est supérieure à 85%.
+```{r}
+pc_modalité_plus_pres <- sapply(cols_to_analyze, function(col_name) {
+  col <- df_numerique[[col_name]]
+  freq_table <- table(col)
+  max_freq <- max(freq_table)
+  return(max_freq)
+})
+vars_to_remove_sup_85 <- names(pc_modalité_plus_pres[pc_modalité_plus_pres > 85])
+cols_to_analyze <- setdiff(cols_to_analyze, vars_to_remove_sup_85)
+cols_to_analyze
+df_numerique <- df_numerique[,cols_to_analyze]
+# donnees <- donnees[ , !(names(df) %in% vars_to_remove_sup_85)]
+
+```
+Maintenant on va regarder si des valeures sont présentes à moins de 15 %.
+Si ce n'est pas le cas la variable peut être convertit en factor.
+Si c'est le cas on va afficher le tableau des proportions pour voir si un regroupement est envisageable.
+
+```{r}
+
+library(ggplot2)
+library(gridExtra)
+
+pc_modalité_moins_pres <- sapply(cols_to_analyze, function(col_name) {
+  col <- df_numerique[[col_name]]
+  freq_table <- table(col)
+  min_freq <- min(freq_table)
+  return(min_freq)
+})
+vars_to_factor <- names(pc_modalité_plus_pres[pc_modalité_moins_pres > 15])
+cols_to_analyze <- setdiff(cols_to_analyze, vars_to_factor)
+vars_to_factor
+
+
+table_fonction <- sapply(cols_to_analyze, function(col_name) {
+  col <- df_numerique[[col_name]]
+  freq_table <- table(col)
+  return(freq_table)
+})
+class(table_fonction)
+length(table_fonction) #13
+
+plot_list <- list()
+
+# Boucle pour créer un graphique pour chaque table de fréquence
+for (i in seq_along(table_fonction)) {
+  freq_table <- table_fonction[[i]]
+
+  # Créer le graphique pour chaque table de fréquence
+  p <- ggplot(data.frame(Value = names(freq_table), Frequency = as.vector(freq_table)),
+              aes(x = Value, y = Frequency, fill = Value)) +
+    geom_bar(stat = "identity") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = names(table_fonction)[i], x = "Valeur", y = "Fréquence")
+
+  # Ajouter chaque graphique à la liste
+  plot_list[[i]] <- p
+}
+
+# Afficher les graphiques dans une grille 4x4
+grid.arrange(grobs = plot_list, ncol = 4)
+```
+"A03_NbEspCo" peut être convertit en factor.
+Voir avec tutrice à partir du graphe opur éventuelle regroupements.
+Les variables non traitées reste donc au format numérique.
