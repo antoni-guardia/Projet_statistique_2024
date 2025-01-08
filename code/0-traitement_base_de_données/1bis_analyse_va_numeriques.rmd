@@ -57,7 +57,7 @@ pc_modalité_moins_pres <- sapply(cols_to_analyze, function(col_name) {
   min_freq <- min(freq_table)
   return(min_freq)
 })
-vars_to_factor <- names(pc_modalité_plus_pres[pc_modalité_moins_pres > 15])
+vars_to_factor <- names(pc_modalité_moins_pres[pc_modalité_moins_pres > 15])
 cols_to_analyze <- setdiff(cols_to_analyze, vars_to_factor)
 vars_to_factor
 
