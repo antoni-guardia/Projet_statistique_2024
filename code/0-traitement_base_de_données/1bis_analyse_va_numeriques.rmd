@@ -35,7 +35,8 @@ pc_modalité_plus_pres <- sapply(cols_to_analyze, function(col_name) {
   max_freq <- max(freq_table)
   return(max_freq)
 })
-vars_to_remove_sup_85 <- names(pc_modalité_plus_pres[pc_modalité_plus_pres > 85])
+vars_to_remove_sup_85 <- names(pc_modalité_plus_pres[pc_modalité_plus_pres >= 85])
+vars_to_remove_sup_85
 cols_to_analyze <- setdiff(cols_to_analyze, vars_to_remove_sup_85)
 cols_to_analyze
 df_numerique <- df_numerique[,cols_to_analyze]
@@ -60,7 +61,7 @@ pc_modalité_moins_pres <- sapply(cols_to_analyze, function(col_name) {
 vars_to_factor <- names(pc_modalité_moins_pres[pc_modalité_moins_pres > 15])
 cols_to_analyze <- setdiff(cols_to_analyze, vars_to_factor)
 vars_to_factor
-
+cols_to_analyze
 
 table_fonction <- sapply(cols_to_analyze, function(col_name) {
   col <- df_numerique[[col_name]]
