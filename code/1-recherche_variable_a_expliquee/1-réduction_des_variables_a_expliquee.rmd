@@ -1,5 +1,5 @@
 ---
-title: "Clusterisation variables à expliquée"
+title: "Clusterisation variables à expliquer"
 params:
   carb: 1
 ---
@@ -27,7 +27,7 @@ plot(donnees.PCA, choix="var")
 Observation des corrélations :
 
 * Les éternuements et la toux pendant l'engraissement sont fortement corrélés entre eux.
-* Les variables liées au post-sevrage sont également fortement corrélées, mais indépendantes des variables d'engraissement.
+* Les variables liées au post-sevrage sont également fortement corrélées entre elles, mais indépendantes des variables d'engraissement.
 
 
 ```{r}
@@ -62,7 +62,7 @@ On fait la même remarque que tout à l'heure. Regardons les contributions :
 plot(donnees.PCA2$ind$contrib)
 ```
 
-Cependant, si on s'intèresse à la classification des indivus sur les deux premiers axes, on arrive a distinguer que les individus s'emblent se diviser en 3 groupes :
+Cependant, si on s'intéresse à la classification des individus sur les deux premiers axes, on arrive à distinguer que les individus semblent se diviser en 3 groupes :
 ```{r}
 class.hierarchique1 <- hclust(dist(rbind(donnees.PCA2$ind$coord[,c(1, 2)], donnees.PCA2$ind.sup$coord[,c(1, 2)]), method = "euclidean"), method="ward.D2")
 clusters1 <- cutree(class.hierarchique1, k = 3)
@@ -99,11 +99,11 @@ boxplot(value ~ rep(clusters1, each = 4) * X2, data = meltData,
 
 ```
 
-On observe le meme phenomene que pour la premiere ACP, un petit group d'individus contribue fortement à la création des axes tandis que l'apportation du reste des indivus reste relativement faible. De plus, les classes ne sont pas interpretables.
+On observe le même phénomène que pour la première ACP, un petit group d'individus contribue fortement à la création des axes tandis que la contribution du reste des indivus reste relativement faible. De plus, les classes ne sont pas interprétables.
 
 ## UMAP 
 
-Ensuite on se propose d'utiliser une autre méthode de réduction des dimensions afin de comparer les resultats, c'est le cas de umap, qui est plus adaptée pour des variables avec des comportements non lineaires:
+Ensuite on se propose d'utiliser une autre méthode de réduction des dimensions afin de comparer les résultats, c'est le cas de umap, qui est plus adaptée pour des variables avec des comportements non linéaires:
 
 ```{r}
 library(umap)
@@ -111,7 +111,7 @@ donnees.umap <- umap(scaled_data_na, n_components = 2)
 plot(donnees.umap$layout)
 ```
 
-Cette fois-ci, on n'observe plus la repartition rectangulaire. Passons à l'étape de classification hierarchique :
+Cette fois-ci, on n'observe plus la répartition rectangulaire. Passons à l'étape de classification hiérarchique :
 ```{r}
 class.hierarchique <- hclust(dist(donnees.umap$layout, method = "euclidean"), method="ward.D2")
 clusters <- cutree(class.hierarchique, k = 3)
@@ -120,7 +120,7 @@ plot(class.hierarchique)
 
 ```
 
-Au vu du dendogramme, on decide de garder aue trois clusters qui se distribuent dans la plan ainsi :
+Au vu du dendogramme, on décide de faire une classification en trois clusters qui se distribuent dans la plan ainsi :
 ```{r}
 clusters <- cutree(class.hierarchique, k = 3)
 plot(donnees.umap$layout, col = colors[clusters], pch = 19,
@@ -128,7 +128,7 @@ plot(donnees.umap$layout, col = colors[clusters], pch = 19,
      xlab = "UMAP 1", ylab = "UMAP 2")
 ```
 
-Passons à l'interpretation des clusters:
+Passons à l'interprétation des clusters:
 
 ```{r}
 clusters <- as.factor(clusters)
@@ -139,7 +139,7 @@ boxplot(value ~ rep(clusters, 4) * X2, data = meltData,
         col = colors,  
         frame = FALSE,
         at = c(1,2,3,5,6,7,9,10,11,13,14,15),
-        main = "Répartition des variables à expliquée normalisées par cluster umap",
+        main = "Répartition des variables à expliquer normalisées par cluster umap",
         xlab = "Valeur",
         ylab = "",
         las = 2,
@@ -152,7 +152,7 @@ boxplot(value ~ rep(clusters, 4) * X2, data = meltData,
 * Cluster vert : Contient les individus malades en engraissement, bien que cet effet soit moins marqué.
 * Cluster bleu : Représente les individus en bonne santé.
 
-Regardons plus en detail ses observations : 
+Regardons plus en détail ses observations : 
 ```{r,  warning=FALSE}
 library(car)
 par(mfrow = c(2, 2))
