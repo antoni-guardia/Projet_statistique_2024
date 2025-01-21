@@ -34,7 +34,7 @@ Observation des corrélations :
 plot(donnees.PCA$ind$coord)
 ```
 
-En gardant les deux premiers axes, on obtient une variance expliquée supérieure à 60 %. On observe une distribution triangulaire des individus. On s'intèresse à la contribution des individus : 
+En gardant les deux premiers axes, on obtient une variance expliquée supérieure à 60 %. On observe une distribution triangulaire des individus. On s'intéresse à la contribution des individus : 
 ```{r}
 plot(donnees.PCA$ind$contrib)
 
@@ -111,7 +111,7 @@ donnees.umap <- umap(scaled_data_na, n_components = 2)
 plot(donnees.umap$layout)
 ```
 
-Cette fois-ci, on n'observe plus la répartition rectangulaire. Passons à l'étape de classification hiérarchique :
+Cette fois-ci, on n'observe plus la répartition triangulaire. Passons à l'étape de classification hiérarchique :
 ```{r}
 class.hierarchique <- hclust(dist(donnees.umap$layout, method = "euclidean"), method="ward.D2")
 clusters <- cutree(class.hierarchique, k = 3)
@@ -183,21 +183,35 @@ On observe que les individus du groupe bleu se concentrent autour de zéro pour 
 Cette analyse rejoint les conclusions obtenues précédemment avec le barplot.
 
 
+Passons aux tests statistiqes pour confirmer les observations.
+```{r}
+donnes_na$y <- clusters
+donnes_na[donnes_na$y == i,variable]
+for(variable in colnames(donnes_na)[1:4]){
+        for(i in 1:2){
+                for(j in (i+1):3){
+                test <- wilcox.test(donnes_na[donnes_na$y == i,variable], donnes_na[donnes_na$y == j, variable], exact = FALSE)
+                cat(sprintf("Wilcox Test pour la variable : %s\n", variable))
+                cat(sprintf("Pour les clusters %d et %d\n", i, j))
+                cat(sprintf("p-valeur est %.4f\n", test$p.value))
+                cat("-------------------------\n")
+                }
+        }
+}
 
-```{r, include=FALSE}
-# Stockage de la variable dans le data frame : 
+for(variable in colnames(donnes_na)[1:4]){
+  for(i in 1:2){
+    for(j in (i+1):3){
+      
+      # Perform the Kolmogorov-Smirnov test
+      test <- ks.test(donnes_na[donnes_na$y == i, variable], donnes_na[donnes_na$y == j, variable])
+      
+      # Print formatted result
+      cat(sprintf("Kolmogorov-Smirnov Test pour la variable : %s\n", variable))
+      cat(sprintf("Pour les clusters %d et %d\n", i, j))
+      cat(sprintf("p-valeur est %.4f\n", test$p.value))
+      cat("-------------------------\n") 
+  }
+}
 
-# donnees$y <- NA
-
-# lignes_non_manquantes <- !apply(is.na(scaled_data), 1, any)
-
-# donnees$y[lignes_non_manquantes] <- clusters
-# donnees$y
-# saveRDS(donnees, file="nouvelles_donnees.Rdata")
-# donnees2 <- readRDS("nouvelles_donnees.Rdata")
-# donnees2$y
-# summary(donnees)
 ```
-
-
-
