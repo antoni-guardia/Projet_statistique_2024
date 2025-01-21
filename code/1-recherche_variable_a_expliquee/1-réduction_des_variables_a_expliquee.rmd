@@ -186,14 +186,14 @@ Cette analyse rejoint les conclusions obtenues précédemment avec le barplot.
 Passons aux tests statistiqes pour confirmer les observations.
 ```{r}
 donnes_na$y <- clusters
-donnes_na[donnes_na$y == i,variable]
+
 for(variable in colnames(donnes_na)[1:4]){
         for(i in 1:2){
                 for(j in (i+1):3){
                 test <- wilcox.test(donnes_na[donnes_na$y == i,variable], donnes_na[donnes_na$y == j, variable], exact = FALSE)
                 cat(sprintf("Wilcox Test pour la variable : %s\n", variable))
                 cat(sprintf("Pour les clusters %d et %d\n", i, j))
-                cat(sprintf("p-valeur est %.4f\n", test$p.value))
+                cat(sprintf("p-valeur est %f\n", test$p.value))
                 cat("-------------------------\n")
                 }
         }
@@ -209,9 +209,14 @@ for(variable in colnames(donnes_na)[1:4]){
       # Print formatted result
       cat(sprintf("Kolmogorov-Smirnov Test pour la variable : %s\n", variable))
       cat(sprintf("Pour les clusters %d et %d\n", i, j))
-      cat(sprintf("p-valeur est %.4f\n", test$p.value))
+      cat(sprintf("p-valeur est %f\n", test$p.value))
       cat("-------------------------\n") 
-  }
+                }
+        }
 }
 
 ```
+En effectuant les test statistiques, on constate que les répartitions des clusters par rapport aux valeurs dans les quatre variables à expliquée sont bien différentes ainsi que les moyennes. 
+L'analyse visuel réalisé est donc validé.
+
+RESTE A FAIRE TABLEAU DES REPARTITIONS, min-max etc
