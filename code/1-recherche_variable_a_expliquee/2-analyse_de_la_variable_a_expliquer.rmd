@@ -1,0 +1,143 @@
+---
+title: "Analyse de la Variable à expliquer"
+params:
+  carb: 1
+---
+```{r, include=FALSE}
+# Imporation des données
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+
+library(car)
+library(reshape)
+library(RColorBrewer)
+
+colors <- brewer.pal(3, "Set2")
+
+donnees <- readRDS("nouvelles_donnees_2.Rdata", "rb")
+mod_names <- c("ENG_malade", "PS_malade", "Sain")
+
+donnees$y <- factor(donnees$y, levels = c(1, 2, 3), labels = mod_names)
+donnees <- donnees[,c(2,3,4,5,length(donnees))]
+
+donnees_na <- na.omit(donnees)
+scaled_data <- scale(donnees_na[,c(1:4)])
+scaled_data_na <- na.omit(scaled_data)
+noms <- names(donnees)[sapply(donnees, is.numeric)]
+```
+Ici on présente le lien entre les clusters crées avec umap et la classification ascendante hierarchique avec les données d'origine.
+```{r}
+# Fonction generant les données stat
+stat_function <- function(x) {
+  c(
+    Min = min(x, na.rm = TRUE),
+    Q25 = quantile(x, 0.25, na.rm = TRUE),
+    Mean = mean(x, na.rm = TRUE),
+    Median = median(x, na.rm = TRUE),
+    Q75 = quantile(x, 0.75, na.rm = TRUE),
+    Max = max(x, na.rm = TRUE)
+  )
+}
+
+for (var_name in noms) {
+  stats_per_group <- do.call(rbind, lapply(split(donnees, donnees$y), function(sub_df) {
+    stats <- stat_function(sub_df[[var_name]])
+    cbind(FactorClass = unique(sub_df$y), t(stats))
+  }))
+  
+  stats_df <- as.data.frame(stats_per_group)
+  stats_df$FactorClass <- factor(stats_df$FactorClass, levels = 1:3, labels = levels(donnees$y))
+
+  stats_df[, -1] <- lapply(stats_df[, -1], as.numeric)
+  colnames(stats_df) <- c("Modalité", "Min", "Q25", "Medianne", "Moyenne", "Q75", "Max" )
+
+  cat("\n\n### Variable :", var_name, "\n\n")
+  
+  print(knitr::kable(stats_df, format = "markdown"))
+}
+```
+
+On observe que les modalités ENG_malade et PS_malade montrent des valeurs bien distinctes, avec des moyennes et médianes significativement plus élevées que la modalité Sain, ce qui reflète probablement un état de santé différent. Les données montrent également une grande variabilité, notamment pour PS_malade, où les valeurs maximales sont particulièrement élevées, ce qui peut indiquer des cas extrêmes.
+```{r,  warning=FALSE}
+
+meltData <- melt(scaled_data_na)
+boxplot(value ~ rep(na.omit(donnees$y), 4) * X2, data = meltData,
+        horizontal =  TRUE,           
+        outline = FALSE,  
+        col = colors,  
+        frame = FALSE,
+        at = c(1,2,3,5,6,7,9,10,11,13,14,15),
+        main = "Répartition des variables à expliquée par cluster acp",
+        xlab = "Valeur",
+        ylab = "",
+        las = 2,
+        cex.axis = 0.72,
+        names=c("", "PS_TX", " ", " ", "PS_ETER", " ", " ", "ENG_TX", " ", " ", "ENG_ETER", " " )
+        )
+```
+
+
+```{r,  warning=FALSE}
+par(mfrow = c(2, 2))
+for (i in 1:4) {
+    densityPlot(donnees_na[, i] ~ donnees_na$y,
+            xlab = colnames(donnees_na)[i],
+            col = colors,
+            legend=FALSE,
+            normalize = TRUE)
+}
+
+df <- donnees_na[donnees_na$y != "Sain", ]
+for (i in 1:4) {
+
+    densityPlot(df[, i] ~ df$y,
+            xlab = colnames(donnees_na)[i],
+            col = colors,
+            xlim=c(-2, 45),
+            legend=FALSE,
+            normalize = TRUE
+            )
+}
+```
+
+En analysant les boxplots et les distributions des variables par modalité, nous observons un phénomène similaire à celui précédemment mentionné, à savoir une concentration des valeurs. Cependant, ces observations ne sont pas représentatives de l'ensemble des individus de chaque groupe, mais plutôt de la majorité. Par exemple, parmi les individus du groupe PS_malade, certains présentent une fréquence de toux plus élevée lors de l'engraissement que certains individus du groupe ENG_malade.
+
+Nous proposons ensuite de réaliser des tests statistiques afin de vérifier si ces différences entre les groupes sont statistiquement significatives. Nous utiliserons le test de Kolmogorov-Smirnov  et le test de Wilcox pour analyser les différences de distribution entre les groupes.
+```{r, include=FALSE}
+par(mfrow = c(1, 1))
+```
+
+```{r}
+
+for(variable in colnames(donnees_na)[1:4]){
+        for(i in 1:2){
+                for(j in (i+1):3){
+                test <- wilcox.test(donnees_na[donnees_na$y == mod_names[i],variable], donnees_na[donnees_na$y == mod_names[j], variable], exact = FALSE)
+                cat(sprintf("Wilcox Test pour la variable : %s\n", variable))
+                cat(sprintf("Pour les clusters %s et %s\n", mod_names[i], mod_names[j]))
+                cat(sprintf("p-valeur est %f\n", test$p.value))
+                cat("-------------------------\n")
+                }
+        }
+}
+
+for(variable in colnames(donnees_na)[1:4]){
+  for(i in 1:2){
+    for(j in (i+1):3){
+      
+      # Perform the Kolmogorov-Smirnov test
+      test <- ks.test(donnees_na[donnees_na$y == mod_names[i], variable], donnees_na[donnees_na$y == mod_names[j], variable])
+      
+      # Print formatted result
+      cat(sprintf("Kolmogorov-Smirnov Test pour la variable : %s\n", variable))
+      cat(sprintf("Pour les clusters %s et %s\n", mod_names[i], mod_names[j]))
+      cat(sprintf("p-valeur est %f\n", test$p.value))
+      cat("-------------------------\n") 
+                }
+        }
+}
+
+```
+Nous observons qu'à un niveau de confiance de 95 %, nous pouvons rejeter l'hypothèse d'égalité de répartition entre toutes les modalités deux à deux pour toutes les variables, à l'exception de la variable "toux en post-sevrage", où les malades en engraissement ont une répartition similaire à celle des individus sains, avec une probabilité de 53 %. Ainsi, à l'exception de ce cas particulier, nous constatons que les catégories définies sont globalement bien adaptées aux données.
+Toutefois, il serait inexact de conclure que les individus malades en engraissement ne le sont pas en post-sevrage. Bien qu'ils présentent une meilleure santé statistiquement par rapport aux malades en post-sevrage, ils montrent, de manière significativement différente, une santé plus dégradée que les individus sains (à l'exception du cas précisé), et ce phénomène s'inverse également.
+Si nécessaire, dans le futur de l'étude, distinguer entre individus sains et non-sains serait donc une découpe adaptée aux données.

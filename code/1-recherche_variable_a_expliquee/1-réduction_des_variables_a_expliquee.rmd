@@ -13,7 +13,6 @@ donnes_na <- na.omit(donnees)
 scaled_data <- scale(donnees)
 scaled_data_na <- na.omit(scaled_data)
 
-# install.packages(c("FactoMineR", "umap", "RColorBrewer", "reshape", "car"))
 ```
 ## ACP
 On effectue une ACP :
