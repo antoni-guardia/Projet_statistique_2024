@@ -6,7 +6,7 @@ On commence par télécharger les variables à expliquer.
 ```{r, fig.width=10, fig.height=15}
 rm(list=ls())
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
-donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+donnees <- readRDS("donnees_etape_0.Rdata", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
 summary(var_a_expliquee)
 library(gplots)

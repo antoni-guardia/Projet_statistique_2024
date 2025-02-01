@@ -8,7 +8,7 @@ params:
 set.seed(123456)
 rm(list=ls())
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
-donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")[,c(2,3,4,5)]
+donnees <- readRDS("donnees_etape_0.Rdata", "rb")[,c(2,3,4,5)]
 donnes_na <- na.omit(donnees)
 scaled_data <- scale(donnees)
 scaled_data_na <- na.omit(scaled_data)
@@ -150,72 +150,3 @@ boxplot(value ~ rep(clusters, 4) * X2, data = meltData,
 * Cluster orange : Contient majoritairement les individus malades en post-sevrage.
 * Cluster vert : Contient les individus malades en engraissement, bien que cet effet soit moins marqué.
 * Cluster bleu : Représente les individus en bonne santé.
-
-Regardons plus en détail ses observations : 
-```{r,  warning=FALSE}
-library(car)
-par(mfrow = c(2, 2))
-for (i in 1:4) {
-
-    densityPlot(donnes_na[, i] ~ clusters,
-            xlab = colnames(donnes_na)[i],
-            col = colors,
-            legend=FALSE,
-            normalize = TRUE)
-}
-df <- donnes_na[clusters != 3, ]
-
-for (i in 1:4) {
-
-    densityPlot(df[, i] ~ clusters[clusters != 3 ],
-            xlab = colnames(donnes_na)[i],
-            col = colors,
-            xlim=c(-2, 45),
-            legend=FALSE,
-            normalize = TRUE
-            )
-}
-```
-
-On observe que les individus du groupe bleu se concentrent autour de zéro pour toutes les variables, ce qui suggère qu'ils sont généralement en bonne santé en post-sevrage et en engraissement. En ce qui concerne les classes orange et verte, on remarque qu'en post-sevrage, les individus de la classe verte se concentrent davantage autour de zéro que ceux de la classe orange. En revanche, en engraissement, les individus de la classe orange présentent davantage de toux et d'éternuements, tandis que la classe verte montre moins de symptômes. Ainsi, il semble que les élevages de la catégorie verte tendent à avoir des porcs en moins bonne santé en engraissement, tandis que ceux de la catégorie orange semblent rencontrer davantage de problèmes en post-sevrage.
-
-Cette analyse rejoint les conclusions obtenues précédemment avec le barplot.
-
-
-Passons aux tests statistiqes pour confirmer les observations.
-```{r}
-donnes_na$y <- clusters
-
-for(variable in colnames(donnes_na)[1:4]){
-        for(i in 1:2){
-                for(j in (i+1):3){
-                test <- wilcox.test(donnes_na[donnes_na$y == i,variable], donnes_na[donnes_na$y == j, variable], exact = FALSE)
-                cat(sprintf("Wilcox Test pour la variable : %s\n", variable))
-                cat(sprintf("Pour les clusters %d et %d\n", i, j))
-                cat(sprintf("p-valeur est %f\n", test$p.value))
-                cat("-------------------------\n")
-                }
-        }
-}
-
-for(variable in colnames(donnes_na)[1:4]){
-  for(i in 1:2){
-    for(j in (i+1):3){
-      
-      # Perform the Kolmogorov-Smirnov test
-      test <- ks.test(donnes_na[donnes_na$y == i, variable], donnes_na[donnes_na$y == j, variable])
-      
-      # Print formatted result
-      cat(sprintf("Kolmogorov-Smirnov Test pour la variable : %s\n", variable))
-      cat(sprintf("Pour les clusters %d et %d\n", i, j))
-      cat(sprintf("p-valeur est %f\n", test$p.value))
-      cat("-------------------------\n") 
-                }
-        }
-}
-
-```
-En effectuant les test statistiques, on constate que les répartitions des clusters par rapport aux valeurs dans les quatre variables à expliquée sont bien différentes ainsi que les moyennes. 
-L'analyse visuel réalisé est donc validé.
-
-RESTE A FAIRE TABLEAU DES REPARTITIONS, min-max etc

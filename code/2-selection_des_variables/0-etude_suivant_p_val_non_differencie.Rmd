@@ -1,0 +1,170 @@
+```{r, include=FALSE}
+# Nettoyage de l'environnement
+rm(list = ls())
+
+# Chargement des librairies
+library(dplyr)
+library(corrplot)
+library(Exact) 
+library(ggplot2)
+# install.packages("Exact")
+# Définition du répertoire de travail
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+
+# Chargement du fichier .rds
+data <- readRDS("donnees_etape_1_1.Rdata", "rb")
+nom_colonnes <- colnames(data)
+```
+
+
+## Étude univariée du lien entre Y et les variables X
+
+```{r, warning=FALSE}
+# Fonction d'étude univariée
+etude_univariee <- function(Y, data) {
+  if (!(Y %in% colnames(data))) {
+    stop("La variable Y n'est pas présente dans le jeu de données.")
+  }
+  
+  variables_selectionnees <- list()
+  
+  for (var in colnames(data)) {
+    if (var == Y) next 
+    
+    if (is.numeric(data[[var]])) {
+      p_value <- tryCatch({
+        summary(aov(data[[var]] ~ data[[Y]]))[[1]]$`Pr(>F)`[1]
+      }, error = function(e) NA)
+      
+    } else if (is.factor(data[[var]])) {
+      contingency_table <- table(data[[var]], data[[Y]])
+      if (any(contingency_table <= 5)) {
+        p_value <- tryCatch({
+          fisher.test(contingency_table)$p.value
+        }, error = function(e) NA)
+      } else {
+        p_value <- tryCatch({
+          chisq.test(contingency_table)$p.value
+        }, error = function(e) NA)
+      }
+      
+    } else {
+      next
+    }
+    
+    if (!is.na(p_value)) {
+      variables_selectionnees[[var]] <- p_value
+    }
+  }
+  
+  return(variables_selectionnees)
+}
+```
+
+## Exécution de l'étude univariée
+
+```{r}
+resultats <- etude_univariee(Y = colnames(data)[511], data = data)
+length(resultats)
+```
+
+## Sélection des variables explicatives pertinentes
+```{r, warning=FALSE}
+
+p_values <- as.numeric(unlist(resultats))
+top_100_p_value <- p_values[order(p_values)][100]
+
+density_values <- density(p_values)
+
+valid_range <- density_values$x >= 0 & density_values$x <= 0.23
+filtered_density_x <- density_values$x[valid_range]
+filtered_density_y <- density_values$y[valid_range]
+
+slopes <- diff(filtered_density_y)
+local_max_x <- filtered_density_x[which.min(slopes)]
+
+
+# Create a density plot
+ggplot(data.frame(p_values), aes(x = p_values)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  geom_vline(xintercept = top_100_p_value, color = "red", linetype = "dashed", size = 1) +
+  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
+  labs(title = "Densité des P-valeurs",
+       x = "p-valeur",
+       y = "Densité") +
+  theme_minimal()
+
+ggplot(data.frame(p_values), aes(x = p_values)) +
+  stat_ecdf(geom = "step", color = "blue", size = 1) +
+  geom_vline(xintercept = top_100_p_value, color = "red", linetype = "dashed", size = 1)  +
+  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
+  labs(title = "Densité cumulée des p-valeurs",
+       x = "P-Valeur",
+       y = "Probabilité cumulée") +
+  theme_minimal()
+
+top_100_p_value
+```
+En gardant une p-valeur de 0.18, on selectionne les 100 valeurs les plus corrélées avec la variable d'intérêt.
+Cependant, vu qu'on a utiliser la même p-valeur pour des variables a nature différente, regardons si les variables selectionne respectent les proportions initialles de typage.
+
+```{r}
+variable_names <- names(resultats)
+
+# Combine p-values with variable names into a data frame
+p_values_df <- data.frame(variable = variable_names, p_value = p_values)
+
+# Sort the data frame by p_value in ascending order
+sorted_p_values_df <- p_values_df[order(p_values_df$p_value), ]
+
+# Get the top 100 variables with the lowest p-values
+top_100_variables <- head(sorted_p_values_df, 100)
+
+p_100_data <- data[, c(top_100_variables$variable, "y")]
+
+column_types <- sapply(data, class)
+
+comparation_typage_dataframe <- function(df1, df2) {
+  # Step 1: Identify the data type of each column in both dataframes
+  types_df1 <- sapply(df1, class)
+  types_df2 <- sapply(df2, class)
+  
+  # Step 2: Calculate the proportion of each data type in df1
+  type_proportions_df1 <- table(types_df1) / length(types_df1)
+  
+  # Step 3: Calculate the proportion of each data type in df2
+  type_proportions_df2 <- table(types_df2) / length(types_df2)
+  
+  # Step 4: Ensure all data types from both dataframes are included
+  all_types <- unique(c(names(type_proportions_df1), names(type_proportions_df2)))
+  
+  # Step 5: Create a comparison data frame with proportions for each data type
+  comparison_df <- data.frame(
+    DataType = all_types,
+    Proportion_df1 = sapply(all_types, function(x) type_proportions_df1[x]),
+    Proportion_df2 = sapply(all_types, function(x) type_proportions_df2[x])
+  )
+  
+  # Step 6: Replace NAs with 0 for missing data types in each dataframe
+  comparison_df$Proportion_df1[is.na(comparison_df$Proportion_df1)] <- 0
+  comparison_df$Proportion_df2[is.na(comparison_df$Proportion_df2)] <- 0
+  
+  # Step 7: Return the comparison table
+  return(comparison_df)
+}
+comparison_df <- comparation_typage_dataframe(data, p_100_data)
+comparison_df
+```
+On observe qu'il existe des differences notables de répartition. Vérifions ces observations par le test de Fisher:
+```{r}
+var_1 <- comparison_df$Proportion_df1[2:3]
+var_2 <- comparison_df$Proportion_df2[2:3]
+contingency_table <- matrix(c(var_1, var_2), 
+                            nrow = 2, 
+                            byrow = TRUE)
+m = round(contingency_table*100)
+fisher.test(m)
+```
+
+On a une p-valeur de 0.08. Serait-il judicieux de choisir alors les variables par catégorie ?
+
