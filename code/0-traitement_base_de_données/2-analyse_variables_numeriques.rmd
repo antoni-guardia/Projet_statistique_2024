@@ -1,12 +1,13 @@
-```{r}
-library(dotenv)
-setwd(Sys.getenv("path_bdd"))
+```{r, include=FALSE}
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 donnees <- readRDS("base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData", "rb")
+# install.packages("gridExtra")
 ```
 
 On s'intéresse maintenant aux données numériques.
 On crée un dataframe contenant seulement les variables numériques.
-Et on compte le nmobre de valeurs unique pour chaque variables.
+Et on compte le nomobre de valeurs uniques pour chaqu'une des variables.
 ```{r}
 numeric_columns <- sapply(donnees, is.numeric)
 df_numerique <- donnees[, numeric_columns]
@@ -14,19 +15,20 @@ n_unique_values <- function(x) {
   length(unique(x))
 }
 unique_counts <- sapply(df_numerique, n_unique_values)
-print(unique_counts)
+unique_counts
 ```
 
 On s'intéresse seulement aux variables ayant moins de 6 valeurs différentes.
-Ce sont des variables numériques potentiellement catégorielles que l'on pourrait convertir en factor.
-Puis
+Ce sont des variables numériques potentiellement catégorielles que l'on pourrait convertir en qualitatives.
+
 ```{r}
 unique_counts[unique_counts < 6] # limite arbitrairement fixée à 6.
 cols_to_analyze <- names(unique_counts[unique_counts < 6])
 cols_to_analyze
 df_numerique <- df_numerique[cols_to_analyze]
 ```
-on regarde le pourcentage d'apparition de la valeure la plus présente.
+
+Puis on regarde le pourcentage d'apparition de la valeure la plus présente.
 On supprime les variables pour lesquelles cette fréquence est supérieure à 85%.
 ```{r}
 pc_modalité_plus_pres <- sapply(cols_to_analyze, function(col_name) {
@@ -43,11 +45,12 @@ df_numerique <- df_numerique[,cols_to_analyze]
 # donnees <- donnees[ , !(names(df) %in% vars_to_remove_sup_85)]
 
 ```
+
 Maintenant on va regarder si des valeures sont présentes à moins de 15 %.
 Si ce n'est pas le cas la variable peut être convertit en factor.
 Si c'est le cas on va afficher le tableau des proportions pour voir si un regroupement est envisageable.
 
-```{r}
+```{r large-barplot, fig.width=12, fig.height=8}
 
 library(ggplot2)
 library(gridExtra)
@@ -91,6 +94,7 @@ for (i in seq_along(table_fonction)) {
 # Afficher les graphiques dans une grille 4x4
 grid.arrange(grobs = plot_list, ncol = 4)
 ```
+
 "A03_NbEspCo" peut être convertit en factor.
 Voir avec tutrice à partir du graphe opur éventuelle regroupements.
 Les variables non traitées reste donc au format numérique.
