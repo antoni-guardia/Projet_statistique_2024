@@ -165,3 +165,8 @@ chisq.test(tab_contingence*100)
 ```
 
 On a une p-valeur de 0,05. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
+
+```{r, include=FALSE, eval=FALSE}
+summary(p_100_data)
+saveRDS(p_100_data, "donnees_etape_2.Rdata")
+```
