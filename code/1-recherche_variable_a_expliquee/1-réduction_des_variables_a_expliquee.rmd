@@ -12,13 +12,17 @@ donnees <- readRDS("donnees_etape_0.Rdata", "rb")[,c(2,3,4,5)]
 donnes_na <- na.omit(donnees)
 scaled_data <- scale(donnees)
 scaled_data_na <- na.omit(scaled_data)
+library(RColorBrewer)
+library(FactoMineR)
+library(table1)
+library(reshape)
+library(umap)
 
 ```
 ## ACP
 On effectue une ACP :
 
 ```{r}
-library(FactoMineR)
 donnees.PCA <- PCA(scaled_data_na, graph=FALSE)
 plot(donnees.PCA, choix="var")
 ```
@@ -77,9 +81,7 @@ plot(pca_data$Dim.1, pca_data$Dim.2, col = pca_data$Cluster, pch = 19,
 ```
 
 ```{r, warning=FALSE}
-library(reshape)
 meltData <- melt(scaled_data_na)
-library(RColorBrewer)
 colors <- brewer.pal(3, "Set2")
 
 boxplot(value ~ rep(clusters1, each = 4) * X2, data = meltData,
@@ -99,6 +101,20 @@ boxplot(value ~ rep(clusters1, each = 4) * X2, data = meltData,
 ```
 
 On observe le même phénomène que pour la première ACP, un petit group d'individus contribue fortement à la création des axes tandis que la contribution du reste des indivus reste relativement faible. De plus, les classes ne sont pas interprétables.
+/*Caractérisation des clusters de la CAH après ACP ou ACM avec FactoMineR*/
+```{r, echo = T, warning = F, message = F}
+plot.HCPC(hc.acm1, choice = 'bar')
+hc.acm1$desc.var
+```
+#obtenir sous forme de tableau les effectifs par cluster
+```{r, echo = T, warning = F, message = F}
+tab <- as.data.frame(freq(hc.acm1$data.clust$clust))
+tab
+```
+#Autre option plus universelle pour caractériser la variable « cluster » par les variables qui ont permis de former les clusters ; en d’autres termes, l’objectif : identifier les variables qui caractérisent chaque cluster  suppose d’avoir récupéré l’affectation de chaque élevage à un cluster et d’avoir ajouté cette variable dans le fichier qui sera soumis à l’analyse décrite ci-dessous.
+```{r, echo = T, warning = F, message = F}
+print(catdes(datasetY_clust, num.var = 33, proba = 0.05)$category)   # NB : num.var = colonne où est la variable ‘cluster’ pour avoir les variables sur et sous représentées dans chaque cluster
+```
 
 ## UMAP 
 

@@ -1,0 +1,88 @@
+---
+title: "Clustering des variables à expliquer"
+params:
+  carb: 1
+---
+```{r, include=FALSE}
+# Chargement des bibliothèques
+library(RColorBrewer)
+library(FactoMineR)
+library(reshape2)
+library(umap)
+library(table1)
+
+#install.packages(c("table1", "questionr", "reshape2"))
+
+# Initialisation
+set.seed(123456)
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+
+# Importation des données
+donnees <- readRDS("donnees_etape_0.Rdata")[,c(2,3,4,5)]
+donnees_na <- na.omit(donnees)
+scaled_data <- scale(donnees_na)
+```
+
+## ACP
+```{r}
+donnees.PCA <- PCA(scaled_data, graph=FALSE)
+plot(donnees.PCA, choix="var")
+```
+
+```{r}
+# Observation des individus
+plot(donnees.PCA$ind$coord)
+```
+
+```{r}
+# Contribution des individus
+top_contrib.1 <- order(donnees.PCA$ind$contrib[, 1], decreasing = TRUE)[1:7]
+top_contrib.2 <- order(donnees.PCA$ind$contrib[, 2], decreasing = TRUE)[1:3]
+top_contrib <- unique(c(top_contrib.1, top_contrib.2))
+print(top_contrib)
+```
+
+```{r}
+# Nouvelle ACP en excluant les individus influents
+donnees.PCA2 <- PCA(scaled_data, ind.sup = top_contrib, graph=FALSE)
+plot(donnees.PCA2, choix="var")
+```
+
+```{r}
+# Visualisation des individus après exclusion
+plot(donnees.PCA2$ind$coord)
+```
+
+## Classification Hiérarchique avec HCPC
+```{r}
+# Application de HCPC
+# inclusion individus supp
+hc.acm1 <- HCPC(donnees.PCA2, graph = FALSE, nb.clust= 3)
+```
+
+```{r}
+# Visualisation des clusters
+plot(hc.acm1, choice = "tree")
+```
+
+## Caractérisation des clusters
+```{r, echo = T, warning = F, message = F}
+plot.HCPC(hc.acm1, choice = 'bar')
+hc.acm1$desc.var
+```
+
+```{r, echo = T, warning = F, message = F, eval=T}
+# Effectifs par cluster
+tab <- as.data.frame(table(hc.acm1$data.clust$clust))
+tab
+```
+
+```{r, echo = T, warning = F, message = F, eval=T}
+# Utilitzar catdes no cal lo demes en el codi d'abans, fer el test de rand per comparar els clusters amb umap i ACP, utilitzar HPCP clust per mirar el que done també
+datasetY_clust <- cbind(donnees_na[ -top_contrib,], clust = hc.acm1$data.clust$clust)
+summary(datasetY_clust)
+# Identification des variables caractéristiques des clusters
+res <- catdes(datasetY_clust, num.var = 5, proba = 0.05)
+res
+```

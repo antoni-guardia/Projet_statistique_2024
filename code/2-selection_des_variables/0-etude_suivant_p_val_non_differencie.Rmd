@@ -70,22 +70,13 @@ etude_univariee <- function(Y, data) {
 resultats <- etude_univariee(Y = colnames(data)[511], data = data)
 
 p_values <- as.numeric(unlist(resultats))
-top_100_p_value <- p_values[order(p_values)][100]
+p_select <- 0.1
 
 density_values <- density(p_values)
 
-valid_range <- density_values$x >= 0 & density_values$x <= 0.23
-filtered_density_x <- density_values$x[valid_range]
-filtered_density_y <- density_values$y[valid_range]
-
-slopes <- diff(filtered_density_y)
-local_max_x <- filtered_density_x[which.min(slopes)]
-
-
-# Create a density plot
 ggplot(data.frame(p_values), aes(x = p_values)) +
   geom_density(fill = "blue", alpha = 0.5) +
-  geom_vline(xintercept = top_100_p_value, color = "red", linetype = "dashed", size = 1) +
+  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1) +
   # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
   labs(title = "Densité des P-valeurs",
        x = "p-valeur",
@@ -94,17 +85,16 @@ ggplot(data.frame(p_values), aes(x = p_values)) +
 
 ggplot(data.frame(p_values), aes(x = p_values)) +
   stat_ecdf(geom = "step", color = "blue", size = 1) +
-  geom_vline(xintercept = top_100_p_value, color = "red", linetype = "dashed", size = 1)  +
+  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1)  +
   # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
   labs(title = "Densité cumulée des p-valeurs",
        x = "P-Valeur",
        y = "Probabilité cumulée") +
   theme_minimal()
-
-top_100_p_value
+length(p_values[p_values <= p_select])
 ```
 
-En gardant une p-valeur de 0.17, nous sélectionnons les 100 valeurs les plus corrélées avec la variable d'intérêt.  
+En gardant une p-valeur de 0,10, nous sélectionnons 61 variables. Nous faisons ce choix de p-valeur afin de limiter à 10 % les chances de nous tromper lors de la considération ou non d’une variable.
 
 Cependant, comme nous avons utilisé la même p-valeur pour des variables de nature différente, vérifions si les variables sélectionnées respectent les proportions initiales de typage.
 
@@ -115,12 +105,10 @@ variable_names <- names(resultats)
 p_values_df <- data.frame(variable = variable_names, p_value = p_values)
 
 # On met les variables en ordre suivant la p_valeur
-sorted_p_values_df <- p_values_df[order(p_values_df$p_value), ]
+sorted_p_values_df <- p_values_df[p_values_df$p_value <= p_select, ]
 
 # On garde les indices des 100 avec la lus petite p valeur
-top_100_variables <- sorted_p_values_df[c(1:100),]
-
-p_100_data <- data[, c(top_100_variables$variable, "y")]
+p_100_data <- data[, c(sorted_p_values_df$variable, "y")]
 
 column_types <- sapply(data, class)
 
@@ -164,9 +152,10 @@ tab_contingence <- matrix(c(var_1, var_2),
 chisq.test(tab_contingence*100)
 ```
 
-On a une p-valeur de 0,05. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
+On a une p-valeur de 0,04. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
 
 ```{r, include=FALSE, eval=FALSE}
+length(p_100_data)
 summary(p_100_data)
 saveRDS(p_100_data, "donnees_etape_2.Rdata")
 ```
