@@ -16,7 +16,8 @@ library(DescTools)
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 
 # Chargement du fichier .rds
-data <- readRDS("donnees_etape_1_1.Rdata", "rb")
+donnees <- readRDS("nomenclature_y_supp_anciennes.Rdata", "rb")
+data <- donnees[, -1]
 nom_colonnes <- colnames(data)
 ```
 
@@ -48,7 +49,7 @@ etude_univariee <- function(Y, data) {
           }, error = function(e) NA)
       } else {
         p_value <- tryCatch({
-          chisq.test(tab_contingence)$p.value
+          GTest(tab_contingence)$p.value
         }, error = function(e) NA)
       }
       
@@ -67,7 +68,7 @@ etude_univariee <- function(Y, data) {
 
 ## Sélection des variables explicatives
 ```{r, warning=FALSE}
-resultats <- etude_univariee(Y = colnames(data)[511], data = data)
+resultats <- etude_univariee(Y = colnames(data)[510], data = data)
 
 p_values <- as.numeric(unlist(resultats))
 p_select <- 0.1
@@ -144,18 +145,21 @@ comparison_df
 On observe des différences notables de répartition. Vérifions ces observations à l’aide du test du chi^2 :
 
 ```{r}
-var_1 <- comparison_df$Proportion_df1[2:3]
-var_2 <- comparison_df$Proportion_df2[2:3]
+var_1 <- comparison_df$Proportion_df1
+var_2 <- comparison_df$Proportion_df2
+
 tab_contingence <- matrix(c(var_1, var_2), 
                             nrow = 2, 
                             byrow = TRUE)
 chisq.test(tab_contingence*100)
+length(p_100_data)
+head(p_100_data)
 ```
 
 On a une p-valeur de 0,04. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
 
-```{r, include=FALSE, eval=FALSE}
+```{r, include=FALSE, eval=T}
 length(p_100_data)
 summary(p_100_data)
-saveRDS(p_100_data, "donnees_etape_2.Rdata")
+saveRDS(p_100_data, "supp_p_val_10.Rdata")
 ```

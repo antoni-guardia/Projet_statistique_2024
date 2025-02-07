@@ -8,7 +8,8 @@ params:
 set.seed(123456)
 rm(list=ls())
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
-donnees <- readRDS("donnees_etape_0.Rdata", "rb")[,c(2,3,4,5)]
+data <- readRDS("suppression_85_NA.Rdata", "rb")
+donnees <- data[,c(2,3,4,5)]
 donnes_na <- na.omit(donnees)
 scaled_data <- scale(donnees)
 scaled_data_na <- na.omit(scaled_data)
@@ -102,17 +103,17 @@ boxplot(value ~ rep(clusters1, each = 4) * X2, data = meltData,
 
 On observe le même phénomène que pour la première ACP, un petit group d'individus contribue fortement à la création des axes tandis que la contribution du reste des indivus reste relativement faible. De plus, les classes ne sont pas interprétables.
 /*Caractérisation des clusters de la CAH après ACP ou ACM avec FactoMineR*/
-```{r, echo = T, warning = F, message = F}
+```{r, echo = T, warning = F, message = F, eval=F}
 plot.HCPC(hc.acm1, choice = 'bar')
 hc.acm1$desc.var
 ```
 #obtenir sous forme de tableau les effectifs par cluster
-```{r, echo = T, warning = F, message = F}
+```{r, echo = T, warning = F, message = F, eval=F}
 tab <- as.data.frame(freq(hc.acm1$data.clust$clust))
 tab
 ```
 #Autre option plus universelle pour caractériser la variable « cluster » par les variables qui ont permis de former les clusters ; en d’autres termes, l’objectif : identifier les variables qui caractérisent chaque cluster  suppose d’avoir récupéré l’affectation de chaque élevage à un cluster et d’avoir ajouté cette variable dans le fichier qui sera soumis à l’analyse décrite ci-dessous.
-```{r, echo = T, warning = F, message = F}
+```{r, echo = T, warning = F, message = F, eval=F}
 print(catdes(datasetY_clust, num.var = 33, proba = 0.05)$category)   # NB : num.var = colonne où est la variable ‘cluster’ pour avoir les variables sur et sous représentées dans chaque cluster
 ```
 
@@ -166,3 +167,13 @@ boxplot(value ~ rep(clusters, 4) * X2, data = meltData,
 * Cluster orange : Contient majoritairement les individus malades en post-sevrage.
 * Cluster vert : Contient les individus malades en engraissement, bien que cet effet soit moins marqué.
 * Cluster bleu : Représente les individus en bonne santé.
+```{r, eval=T, include=F}
+
+data$y <- NA
+
+lignes_non_manquantes <- !apply(is.na(scaled_data), 1, any)
+
+data$y[lignes_non_manquantes] <- as.factor(clusters)
+data$y
+saveRDS(data, "creation_y.Rdata")
+```

@@ -129,5 +129,5 @@ names_suppr <- c(
 colonnes_a_conserver <- setdiff(names(donnees), names_suppr)
 donnees <- donnees[, colonnes_a_conserver]
 summary(donnees)
-saveRDS(donnees, "donnees_etape_0.Rdata")
+saveRDS(donnees, "suppression_85_NA.Rdata")
 ```
