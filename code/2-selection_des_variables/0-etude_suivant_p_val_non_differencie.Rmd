@@ -160,6 +160,7 @@ On a une p-valeur de 0,04. Donc, les variables ne sont pas indépendantes. Cepen
 
 ```{r, include=FALSE, eval=T}
 length(p_100_data)
-summary(p_100_data)
+p_100_data <- cbind(donnees$CODE_ELEVAGE, p_100_data)
+colnames(p_100_data)[1] <- "CODE_ELEVAGE"
 saveRDS(p_100_data, "supp_p_val_10.Rdata")
 ```
