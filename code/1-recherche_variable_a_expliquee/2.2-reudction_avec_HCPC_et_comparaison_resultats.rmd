@@ -1,0 +1,125 @@
+---
+title: "Clustering des variables à expliquer"
+params:
+  carb: 1
+---
+```{r, include=FALSE}
+# Imporation des données
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+
+library(car)
+library(reshape)
+library(RColorBrewer)
+library(FactoMineR)
+colors <- brewer.pal(3, "Set2")
+
+donnees2 <- readRDS("creation_y.Rdata", "rb")
+mod_names <- c("ENG_malade", "PS_malade", "Sain")
+
+donnees2$y <- factor(donnees2$y, levels = c(1, 2, 3), labels = mod_names)
+donnees <- donnees2[,c(2,3,4,5,length(donnees2))]
+
+donnees_na <- na.omit(donnees)
+scaled_data <- scale(donnees_na[,c(1:4)])
+scaled_data_na <- na.omit(scaled_data)
+noms <- names(donnees)[sapply(donnees, is.numeric)]
+```
+
+## ACP
+```{r}
+donnees.PCA <- PCA(scaled_data, graph=FALSE)
+plot(donnees.PCA, choix="var")
+```
+
+```{r}
+# Observation des individus
+plot(donnees.PCA$ind$coord)
+```
+
+```{r}
+# Contribution des individus
+top_contrib.1 <- order(donnees.PCA$ind$contrib[, 1], decreasing = TRUE)[1:7]
+top_contrib.2 <- order(donnees.PCA$ind$contrib[, 2], decreasing = TRUE)[1:3]
+top_contrib <- unique(c(top_contrib.1, top_contrib.2))
+print(top_contrib)
+```
+
+```{r}
+# Nouvelle ACP en excluant les individus influents
+donnees.PCA2 <- PCA(scaled_data, ind.sup = top_contrib, graph=FALSE)
+plot(donnees.PCA2, choix="var")ch
+```
+
+```{r}
+# Visualisation des individus après exclusion
+plot(donnees.PCA2$ind$coord)
+```
+
+## Classification Hiérarchique avec HCPC
+```{r}
+# Application de HCPC
+# inclusion individus supp car HCPC ne les prends pas en compte
+donnees.PCA2.coord <- data.frame(rbind(donnees.PCA2$ind$coord[, 1:2], donnees.PCA2$ind.sup$coord[, 1:2]))
+hc.acm <- HCPC(donnees.PCA2.coord, graph = FALSE, nb.clust=3)
+
+```
+
+```{r}
+# Visualisation des clusters
+plot(hc.acm, choice = "tree")
+plot.HCPC(hc.acm, choice = 'bar')
+
+```
+
+
+## Caractérisation des clusters
+On commence par créer un dataframe contenant les variables à expliquer initiales ainsi que les différents clusterings (UMAP et ACP).
+
+```{r, echo = T, warning = F, message = F, eval=T}
+datasetY_clust <- cbind(donnees_na, clust = as.factor(hc.acm$data.clust$clust))
+summary(datasetY_clust)
+colnames(datasetY_clust)
+```
+Remarquons que dans ce dataframe :
+
+* Laa variable 5 correspond au résultat de la classification avec UMAP.
+* La variable 6 correspond à celle de l'ACP.
+
+# Méthode ACP+CAH
+```{R}
+res <- catdes(datasetY_clust, num.var = 6, proba = 0.05)
+res
+```
+
+On observe qu'à 5 %, aucune valeur n'est significative ; il faut monter jusqu'à 40 % pour obtenir des observations significatives.
+
+```{r}
+res <- catdes(datasetY_clust, num.var = 6, proba = 0.4)
+res
+```
+
+Ainsi, les clusters issus de cette méthode ne sont pas interprétables.
+
+# Méthode UMAP+CAH
+```{R}
+res <- catdes(datasetY_clust, num.var = 5, proba = 0.05)
+res
+```
+Contrairement à ce qui a été observé dans la méthode précédente, ici les variables sont bien corrélées à 5 %.
+
+Les valeurs d'Eta^2 montrent que ENG_Eter_freq (0.489) et PS_Eter_freq (0.444) sont les plus fortement associées au clustering. Cela signifie que ces variables jouent un rôle majeur dans la différenciation des groupes.  
+ENG_Tx_freq (0.238) et PS_Tx_freq (0.225) sont également liées au clustering, mais de manière moins forte.  
+
+
+#### Cluster "ENG_malade"  
+- Se caractérise par des valeurs élevées de ENG_Eter_freq (5.54 vs 2.20 en général) et ENG_Tx_freq (16.31 vs 7.03 en général).  
+- Cela indique que ce groupe regroupe des individus  à une fréquence toux et éternouments plus élevée en ENG.
+
+#### Cluster "PS_malade"  
+- Se caractérise par des valeurs élevées de PS_Eter_freq (26.39 vs 9.27 en général) et PS_Tx_freq (21.98 vs 6.50 en général).  
+- Ce groupe est donc associé à une fréquence de toux et éternouments plus élevée en PS.  
+
+#### Cluster "Sain"  
+- Toutes les variables ont des valeurs significativement plus faibles que la moyenne globale.  
+- Ce groupe représente donc les individus avec peu d'occurrences des événements en anglais et PS.  

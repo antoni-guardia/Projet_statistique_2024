@@ -107,6 +107,12 @@ p_values_df <- data.frame(variable = variable_names, p_value = p_values)
 
 # On met les variables en ordre suivant la p_valeur
 sorted_p_values_df <- p_values_df[p_values_df$p_value <= p_select, ]
+```
+```{r, eval=F, include=F}
+
+saveRDS(sorted_p_values_df, "variables_selectionnees_p_valeur.Rdata")
+```
+```{r}
 
 # On garde les indices des 100 avec la lus petite p valeur
 p_100_data <- data[, c(sorted_p_values_df$variable, "y")]

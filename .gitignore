@@ -1,11 +1,11 @@
 3.Donnees
 1.Dictionnaires_Variables
-base_PC_Var_X_Var_Y_ENSAI_Respi_FINALE.RData
 .env
 init.R
 init_dotenv.R
-.html
-suppression_85_NA.Rdata
-creation_y.Rdata
-nomenclature_y_supp_anciennes.Rdata
-supp_p_val_10.Rdata
+Ignore .RData files
+*.RData
+Ignore .html files
+*.html
+Ignore .Rdata files
+*.Rdata
