@@ -70,7 +70,7 @@ var_p_val <- var_p_val[  !var_p_val$variable %in% noms_suppr,]
 colnames(donnees)
 ```
 
-# Affichage répartition selon variable à expliquér
+# Affichage répartition selon variable à expliquer
 Commençons avec variables qualitatives:
 
 ```{r}
