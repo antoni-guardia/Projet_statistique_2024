@@ -10,20 +10,20 @@ donnees <- readRDS("supp_p_val_10.Rdata", "rb")
 var_p_val <- readRDS("variables_selectionnees_p_valeur.Rdata", "rb")
 nrow(var_p_val)
 ```
-# Suppression variables doublés
-Aprés selection des données, on a un total de 
+# Suppression variables doublées
+Après sélection des données, on a un total de 
 ```{r}
 length(donnees)
 ```
 
-Parmis celles ci, il y a des variables qualitatives issues de la même variable quantitative don on eneleve celles ayant une p-valeur plus élevée.
+Parmis celles ci, il y a des variables qualitatives issues de la même variable quantitative dont on enelève celles ayant une p-valeur plus élevée.
 ```{r}
 # débit des abreuvoirs en L/min
 
 var_noms_eau <- c("T10_PS_EauDebi_1",
                   "T10_PS_EauDebi_2")
 var_p_val[var_p_val$variable %in% var_noms_eau,] # affichage des p_val par variable
-# Recherche nom variable a gardé
+# Recherche nom variable à garder
 var_a_garder_eau <- var_p_val[ var_p_val$p_value == min(var_p_val[var_p_val$variable %in% var_noms_eau,]$p_value),]$variable
 # On crée la liste des noms de variables à supprimer
 noms_a_supp_eau <- var_noms_eau[var_noms_eau != var_a_garder_eau]
@@ -70,8 +70,8 @@ var_p_val <- var_p_val[  !var_p_val$variable %in% noms_suppr,]
 colnames(donnees)
 ```
 
-# Affichage répartition selon variable à expliquée 
-Commençons par les variables qualitatives:
+# Affichage répartition selon variable à expliquér
+Commençons avec variables qualitatives:
 
 ```{r}
 # On crée un vecteur contenant le nom des variables factor
@@ -88,7 +88,7 @@ for (col in factor_var) {
 }
 ```
 
-Continuons par les variables quantitatives:
+Continuons avec variables quantitatives:
 ```{r}
 # On crée un vecteur contenant le nom des variables numeric
 numeric_var <- colnames(donnees)[sapply(donnees, FUN= function(x){is.numeric(x)})]
