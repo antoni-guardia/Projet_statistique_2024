@@ -9,3 +9,6 @@ Ignore .html files
 *.html
 Ignore .Rdata files
 *.Rdata
+Ignore .xlsx files
+*.xlsx
+df_var_p_val_Choix_Var_Supp_sujet22.xlsx

@@ -1,0 +1,41 @@
+```{r, include=FALSE}
+# Imporation des données
+set.seed(123456)
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+data <- readRDS("umap_results.Rdata", "rb")
+data.umap <- data[, c(1,2)]
+data.no_umap <- data[, -c(1,2)]
+library(umap)
+# install.packages("dbscan")
+library(dbscan)
+library(FactoMineR)
+```
+
+Ici, on se propose d'utiliser la méthode de HDBscan et de comparer les résultats avec la classification obtenue en utilisant la CAH.
+```{R}
+cl <- hdbscan(data.umap, minPts=5)
+plot(data.umap, col=cl$cluster+1, pch=20)
+```
+
+Regardons le dendrogramme :
+
+```{R}
+plot(cl)
+
+```
+
+Contrairement à la classification CAH, ici la meilleure partition est celle en deux clusters (un individu étant exclu, qu'on pourrait sûrement classifier dans la classe verte par rapport à ses voisins). Regardons comment ceux-ci se caractérisent à l'aide des quatre variables à expliquer :
+
+```{r}
+data.no_umap$clusters_hdb <- as.factor(cl$cluster)
+catdes(data.no_umap[,-c(6)], num.var = 1, proba = 0.05)
+catdes(data.no_umap[, -c(1)], num.var= 5, proba = 0.05)
+```
+
+Quand on analyse les résultats, on observe que les deux clusters qui semblent se dégager sont :
+
+* Post-sevrage Sain
+* Post-sevrage Malade
+
+Ainsi, les résultats issus de la classification semblent plus adaptés aux variables explicatives initiales. Quant à l'information analysée, notre variable à expliquer sera donc celle construite avec UMAP et CAH.

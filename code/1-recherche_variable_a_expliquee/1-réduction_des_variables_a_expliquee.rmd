@@ -176,4 +176,13 @@ lignes_non_manquantes <- !apply(is.na(scaled_data), 1, any)
 data$y[lignes_non_manquantes] <- as.factor(clusters)
 data$y
 saveRDS(data, "creation_y.Rdata")
+
+resultat_umap <- as.data.frame(donnees.umap$layout)
+colnames(resultat_umap) <- c("dim1", "dim2")
+resultat_umap <- cbind(resultat_umap, clusters)
+
+resultat_umap$clusters <- factor(resultat_umap$clusters , levels = c(1, 2, 3), labels = c("ENG_malade", "PS_malade", "Sain"))
+resultat_umap <- cbind(resultat_umap, donnes_na)
+saveRDS(resultat_umap, "umap_results.Rdata")
+
 ```

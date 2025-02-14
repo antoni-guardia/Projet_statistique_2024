@@ -1,0 +1,41 @@
+```{r, include=FALSE}
+# Nettoyage de l'environnement
+rm(list = ls())
+
+# Chargement des librairies
+library(dplyr)
+library(corrplot)
+#install.packages("Exact")
+library(Exact) 
+library(ggplot2)
+#install.packages("DescTools")
+#library(DescTools)
+
+
+
+
+# Chargement des fichiers .rds
+data <- readRDS("suppression_doublons.Rdata", "rb") # la base de données précédente
+redondance <- readxl::read_xlsx("df_var_p_val_Choix_Var_Supp_sujet22.xlsx") # le df contenant les variables à supprimer
+```
+
+## Suppression des variables redondantes et plus sur conseil de la tutrice
+```{r}
+summary(redondance)
+
+# Récupérons les variables à garder dans le dataframe à l'exception de CODE_ELEVAGE et y 
+variables_keep <- redondance %>% filter(`A_supprimer (0:non; 1: oui)`=="0")
+summary(variables_keep)
+
+# Gardons uniquement ces variables dans notre future base de données
+data_new <- data %>% select(all_of(variables_keep$variable))
+
+# Rajoutons à la main les variables CODE_ELEVAGE et y
+data_new <- cbind(data$CODE_ELEVAGE, data_new, data$y)
+colnames(data_new)[1] <- "CODE_ELEVAGE"
+colnames(data_new)[26] <- "y"
+length(data_new)
+
+# Enregistrons les données
+saveRDS(data_new, "supp_redondanceet+_tutrice.Rdata")
+```

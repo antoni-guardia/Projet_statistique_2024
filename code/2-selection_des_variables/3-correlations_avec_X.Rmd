@@ -1,0 +1,101 @@
+```{r, include=FALSE}
+# Nettoyage de l'environnement
+rm(list = ls())
+
+# Chargement des librairies
+install.packages("Exact")
+install.packages("DescTools")
+
+library(dplyr)
+library(corrplot)
+library(Exact) 
+library(ggplot2)
+library(DescTools)
+
+
+
+
+# Chargement du fichier .rds
+data <- readRDS("supp_redondanceet+_tutrice.Rdata", "rb")
+```
+
+## Étude des liens entre les variables X deux à deux
+On commence par définir une fonction qui s'inspire de la précédente. Elle réalise un G-test pour les variables qualitatives-qualitatives. Pour les variables numériques-qualitatives, on applique un test ANOVA. Puis pour les variables numériques-numériques, on utilise un test de corrélation de Spearman qui permet de détecter des liens monotones et pas uniquement les liens linéaires.
+Une option est disponible pour modifier la fonction en bas. Elle permet d'afficher 1 lorsque la p_value est strictement supérieure à 0.10 et permet de faciliter l'identification des corrélations problématiques.
+```{r}
+etude_bivariee <- function(data) {
+  # Initialiser une matrice vide pour stocker les p-values
+  n <- ncol(data)
+  p_value_matrix <- matrix(NA, nrow = n, ncol = n, dimnames = list(colnames(data), colnames(data)))
+  
+  # Boucle sur toutes les paires de variables
+  for (i in 1:n) {
+    var1 <- colnames(data)[i]
+    
+    for (j in 1:n) {
+      var2 <- colnames(data)[j]
+      
+      # Pour les valeurs sur la diagonale, on met la valeur 0
+      if (i == j) {
+        p_value_matrix[i, j] <- 0
+        next
+      }
+      
+      # Calculer la p-value selon le type des variables
+      if (is.numeric(data[[var1]]) && is.numeric(data[[var2]])) {
+        # Test de corrélation de Spearman pour deux variables numériques
+        p_value <- tryCatch({
+          cor.test(data[[var1]], data[[var2]], method = "spearman", exact = FALSE)$p.value
+        }, error = function(e) NA)
+        
+      } else if (is.factor(data[[var1]]) && is.factor(data[[var2]])) {
+        # Test G-test pour deux variables catégorielles
+        tab_contingence <- table(data[[var1]], data[[var2]])
+        if (any(tab_contingence < 5)) {
+          p_value <- tryCatch({
+            GTest(tab_contingence)$p.value
+          }, error = function(e) NA)
+        } else {
+          p_value <- tryCatch({
+            GTest(tab_contingence)$p.value
+          }, error = function(e) NA)
+        }
+        
+      } else if (is.numeric(data[[var1]]) && is.factor(data[[var2]])) {
+        # Test ANOVA pour une variable numérique et une catégorielle
+        p_value <- tryCatch({
+          summary(aov(data[[var1]] ~ data[[var2]]))[[1]]$`Pr(>F)`[1]
+        }, error = function(e) NA)
+        
+      } else if (is.factor(data[[var1]]) && is.numeric(data[[var2]])) {
+        # Test ANOVA pour une variable catégorielle et une numérique
+        p_value <- tryCatch({
+          summary(aov(data[[var2]] ~ data[[var1]]))[[1]]$`Pr(>F)`[1]
+        }, error = function(e) NA)
+        
+      } else {
+        # Cas non pris en charge
+        p_value <- NA
+      }
+      
+      # Option pour afficher 1 à toutes les p_value > 0.10 :
+      #if (!is.na(p_value) & p_value > 0.10){
+      #  p_value <- 1
+      #}
+      
+      # Stocker la p-value dans la matrice
+      p_value_matrix[i, j] <- p_value
+    }
+  }
+  
+  return(p_value_matrix)
+}
+```
+
+On utilise donc cette fonction sur notre jeu de données (en prenant le soin d'enlever CODE_ELEVAGE et y) et on peut observer les résultats.
+```{r}
+
+corrX <- etude_bivariee(data[-c(1,26)])
+round(corrX, 2)
+
+```

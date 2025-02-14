@@ -101,6 +101,7 @@ for (col in numeric_var) {
 }
 ```
 ```{r, include=F, eval=F}
+ncol(donnees)
 saveRDS(var_p_val, "df_var_p-val.Rdata")
 saveRDS(donnees, "suppression_doublons.Rdata")
 ```
