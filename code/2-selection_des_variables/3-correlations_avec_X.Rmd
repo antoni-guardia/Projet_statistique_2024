@@ -230,6 +230,7 @@ minimize_p_value_sum <- function(df_var, bool_mat) {
   
   # Identification de variables candidates –celles avec le maximum de corrélations.
   n_max_corr <- max(df_var$nb_var_corr)
+  # peut-être modif si on veut considerer max, max-1, ... Mais complexité augmente (Algo rapproche glouton)
   candidate_vars <- df_var$variable[df_var$nb_var_corr == n_max_corr]
   
   best_solution <- NULL
