@@ -3,27 +3,33 @@
 rm(list = ls())
 
 # Chargement des librairies
-install.packages("Exact")
-install.packages("DescTools")
+# install.packages("Exact")
+# install.packages("DescTools")
+# install.packages(c("vcd", "lsr"))
 
-library(dplyr)
 library(corrplot)
 library(Exact) 
-library(ggplot2)
 library(DescTools)
+library(vcd)
+library(reshape2)
+library(lsr)
+library(RColorBrewer)
+library(knitr)
 
-
-
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 
 # Chargement du fichier .rds
 data <- readRDS("supp_redondanceet+_tutrice.Rdata", "rb")
+df_var <- readRDS("df_var_p-val.Rdata", "rb")
+df_var <- df_var[ df_var$variable %in% colnames(data),]
+
 ```
 
 ## Étude des liens entre les variables X deux à deux
 On commence par définir une fonction qui s'inspire de la précédente. Elle réalise un G-test pour les variables qualitatives-qualitatives. Pour les variables numériques-qualitatives, on applique un test ANOVA. Puis pour les variables numériques-numériques, on utilise un test de corrélation de Spearman qui permet de détecter des liens monotones et pas uniquement les liens linéaires.
 Une option est disponible pour modifier la fonction en bas. Elle permet d'afficher 1 lorsque la p_value est strictement supérieure à 0.10 et permet de faciliter l'identification des corrélations problématiques.
 ```{r}
-etude_bivariee <- function(data) {
+matrice_p_valeur <- function(data) {
   # Initialiser une matrice vide pour stocker les p-values
   n <- ncol(data)
   p_value_matrix <- matrix(NA, nrow = n, ncol = n, dimnames = list(colnames(data), colnames(data)))
@@ -90,12 +96,176 @@ etude_bivariee <- function(data) {
   
   return(p_value_matrix)
 }
+
 ```
 
 On utilise donc cette fonction sur notre jeu de données (en prenant le soin d'enlever CODE_ELEVAGE et y) et on peut observer les résultats.
 ```{r}
 
-corrX <- etude_bivariee(data[-c(1,26)])
-round(corrX, 2)
+p_val_mat <- as.matrix(matrice_p_valeur(data[-c(1,26)]))
+visual_mat <- formatC(p_val_mat, format = "e", digits = 2)
 
+kable(visual_mat, format = "markdown")
 ```
+On code ensuite une fonction permettant de visualiser les résultats sous forme de carte de chaleur, où l'on raille avec des ligne rouges les rélations dont la p-valeur est inferieure à 5%:
+```{r, fig.width=10, fig.height=10, fig.fullwidth=TRUE}
+heatmap_with_border <- function(mat, titre="", threshold = 0.05, margin = c(14, 14, 4, 2)) {
+
+  # Save current graphical parameters and reset when the function exits.
+  old_par <- par(no.readonly = TRUE)
+  on.exit(par(old_par))
+  
+  # Set larger margins (order: bottom, left, top, right)
+  layout(matrix(c(1, 2), nrow = 2), heights = c(4, 0.5))  # Add space for the gradient
+  par(mar = margin)
+  
+  nr <- nrow(mat)
+  nc <- ncol(mat)
+  
+  # Create a color palette (blue -> white -> red)
+  colors <- colorRampPalette(brewer.pal(9, "Blues"))(100)
+  
+  # Determine the range of the matrix values.
+  min_val <- min(mat, na.rm = TRUE)
+  max_val <- max(mat, na.rm = TRUE)
+  
+  # Set up an empty plot with fixed limits.
+  plot(1, type = "n", xlim = c(0, nc), ylim = c(0, nr), 
+       xaxs = "i", yaxs = "i", xlab = "", ylab = "", axes = FALSE, asp = 1)
+  title(titre, cex.main=2)
+  # Loop over each cell in the matrix.
+  for (i in 1:nr) {
+    for (j in 1:nc) {
+      value <- mat[i, j]
+      
+      # Map the matrix value to a color index.
+      if (max_val != min_val) {
+        index <- round((value - min_val) / (max_val - min_val) * 99) + 1
+      } else {
+        index <- 1
+      }
+      fill_col <- colors[index]
+      
+      # Calculate rectangle boundaries for the cell.
+      xleft  <- j - 1
+      ybottom <- nr - i
+      xright <- j
+      ytop   <- nr - i + 1
+      
+      if (value <= threshold) {
+        # Draw the cell with the assigned fill color, no border.
+        rect(xleft, ybottom, xright, ytop, col = fill_col, border = NA)
+        
+        # Overlay diagonal hatch lines.
+        hatch_spacing <- 0.3  # adjust spacing as needed
+        
+        # Draw hatch lines starting from the left edge.
+        for (y0 in seq(ybottom, ytop, by = hatch_spacing)) {
+          t_max <- min(xright - xleft, ytop - y0)
+          if (t_max > 0) {
+            segments(xleft, y0, xleft + t_max, y0 + t_max, col = "red", lwd = 3)
+          }
+        }
+        # Draw hatch lines starting from the bottom edge.
+        for (x0 in seq(xleft + hatch_spacing, xright, by = hatch_spacing)) {
+          t_max <- min(xright - x0, ytop - ybottom)
+          if (t_max > 0) {
+            segments(x0, ybottom, x0 + t_max, ybottom + t_max, col = "red", lwd = 3)
+          }
+        }
+      } else {
+        # For cells above the threshold, simply draw the rectangle.
+        rect(xleft, ybottom, xright, ytop, col = fill_col, border = NA)
+      }
+    }
+  }
+  
+  # If column names exist, add them to the x-axis.
+  if (!is.null(colnames(mat))) {
+    axis(1, at = seq(0.5, nc - 0.5, by = 1), labels = colnames(mat), las = 2)
+  }
+  
+  # If row names exist, add them to the y-axis.
+  if (!is.null(rownames(mat))) {
+    axis(2, at = seq(0.5, nr - 0.5, by = 1), labels = rev(rownames(mat)), las = 2)
+  }
+  
+  # Draw a box around the heatmap.
+  box()
+  
+  ## Add gradient color bar at the bottom
+  par(mar = c(3, 4, 1, 2))  # Adjust margins for the gradient
+  color_levels <- seq(min_val, max_val, length.out = 100)
+  
+  image(1:100, 1, as.matrix(1:100), col = colors, axes = FALSE, xlab = "", ylab = "")
+  axis(1, at = seq(1, 100, length.out = 5), labels = round(seq(min_val, max_val, length.out = 5), 2))
+}
+
+heatmap_with_border(p_val_mat, "Matrice des p-valeurs", threshold = 0.05)
+```
+
+Regardons comment chaque variable est plus ou moins corrélé au reste des variables, pour cela, créons le colonne du nombre de variables corrélés avec une p-valeur de 5%.
+```{r, eval=T, include=F}
+# On regarde qu'on a bien les bonnes variables dans le df des variables et corrélation avec y
+df_var$variable == colnames(p_val_mat)
+```
+```{r}
+# Création de a matrice indicant si deux variables sont correlées:
+p_val_mat_bool <- p_val_mat <= 0.05
+# Création d'une colonne qui compte le nombre de variables corrélées
+df_var$nb_var_corr <- NA
+for (i in 1:ncol(p_val_mat)){
+  df_var$nb_var_corr[i] <- sum(as.numeric(p_val_mat_bool[i,])) - 1
+}
+summary(df_var)
+```
+On code une fonction permettant d'obtenir les variables à garder de sorte qu'il n'y ait pas de coolinearité et minimize la p_valeur assoicé à la corrélation avec y.
+```{r}
+# Fonction pour minimizer la somme des p-valeurs de sorte qu'il n'y ait aucune variable corrélée ie nb_var_corr == 0 pour toute variable
+minimize_p_value_sum <- function(df_var, bool_mat) {
+  # Cas où l'on à trouver un dataframe sans variables corrélées
+  if (all(df_var$nb_var_corr == 0)) {
+    return(list(opt_df = df_var, p_sum = sum(df_var$p_value)))
+  }
+  
+  # Identification de variables candidates –celles avec le maximum de corrélations.
+  n_max_corr <- max(df_var$nb_var_corr)
+  candidate_vars <- df_var$variable[df_var$nb_var_corr == n_max_corr]
+  
+  best_solution <- NULL
+  best_p_sum <- Inf
+  
+  # On essaie d'enlever chaque candidat et on regarde la solution recursivement
+  for (var in candidate_vars) {
+    # On enleve le candidat de la matrice des correlations
+    new_bool_mat <- bool_mat[!(rownames(bool_mat) %in% var), 
+                               !(colnames(bool_mat) %in% var)]
+    # On l'enleve du dataframe
+    new_df <- df_var[df_var$variable != var, ]
+    
+    # On met a jour le nombre de variables corrélées par variable avec la nouvelle matrice  
+    new_df$nb_var_corr <- sapply(new_df$variable, function(x) {
+      sum(as.numeric(new_bool_mat[x, ])) - 1
+    })
+    
+    # On résoult recursivement avec les nouvelles données
+    result <- minimize_p_value_sum(new_df, new_bool_mat)
+    
+    # On choisit la branche dont la somme des p-val est la plus petite
+    if (result$p_sum < best_p_sum) {
+      best_p_sum <- result$p_sum
+      best_solution <- result$opt_df
+    }
+  }
+  
+  return(list(opt_df = best_solution, p_sum = best_p_sum))
+}
+
+
+length(unique(df_var$p_value)) 
+
+df_var_minimized <- minimize_p_value_sum(df_var, p_val_mat_bool)
+variables_gar <- df_var_minimized$opt_df
+variables_gar$variable
+```
+On garde alors un total de 12 variables.

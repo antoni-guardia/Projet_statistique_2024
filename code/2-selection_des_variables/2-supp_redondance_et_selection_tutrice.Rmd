@@ -11,10 +11,9 @@ library(ggplot2)
 #install.packages("DescTools")
 #library(DescTools)
 
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 
-
-
-# Chargement des fichiers .rds
+# Chargement des fichiers
 data <- readRDS("suppression_doublons.Rdata", "rb") # la base de données précédente
 redondance <- readxl::read_xlsx("df_var_p_val_Choix_Var_Supp_sujet22.xlsx") # le df contenant les variables à supprimer
 ```
