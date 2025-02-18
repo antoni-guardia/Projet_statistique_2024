@@ -77,7 +77,7 @@ Dans cette partie, nous présentons et caractérisons les variables respiratoire
 %    \caption{Caractérisation des variables respiratoires}\label{tab:summary_stats}
 %\end{table}
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=\textwidth]{img_var_resp/dens_var_resp.png}
     \caption{Densité des variables respiratoires (BP\protect\footnotemark\ \text{: }nrd0\protect\footnotemark)}\label{fig:dens_resp}
@@ -90,11 +90,12 @@ Dans cette partie, nous présentons et caractérisons les variables respiratoire
 
 Notons que dans (\ref{fig:dens_resp}) les quatre variables respiratoires présentent une forte concentration de la densité autour de 0, ce qui reflète un bon état respiratoire global chez les porcs étudiés. Cependant, certains élevages montrent des exceptions où cette tendance générale n'est pas observée.
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width=0.9\textwidth]{img_var_resp/rep_var_resp.png}
     \caption{Visualisation des variables respiratoires par élevages}\label{fig:rep_resp}
 \end{figure}
+\newpage
 Dans (\ref{fig:rep_resp}), nous constatons une fois de plus que la majorité des individus présentent des valeurs faibles pour l'ensemble des variables respiratoires. Nous relevons également la présence de cinq individus avec des valeurs manquantes. Il apparaît que ces valeurs manquantes concernent soit les variables issues de l'engraissement, soit celles du post-sevrage. Cette observation est cohérente avec le protocole de l'étude, qui prévoyait la mesure simultanée des éternuements et des toux.
 Des légères corrélations entre la toux et les éternuements sont également observées au sein d'un même lot.
 \subsection{Exploration des relations entre les variables respiratoires}
@@ -126,6 +127,34 @@ Les analyses graphiques et le test de Pearson révèlent une absence de relation
 
 
 \subsubsection{Relations logarithmiques entre les variables respiratoires}
+Nous appliquons la transformation $x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1)$
+\footnote{\footnote{Nous utilisons la transformation \( x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1) \) plutôt que \( x \longmapsto \ln(x) \cdot \hat{{\sigma_x}} \) afin de tenir compte de la présence de zéros dans nos données, tout en conservant une fonction bien définie. Le facteur \( \text{sd}(x) \) (écart-type) est ajouté pour normaliser les données, en atténuant l'effet des différences de dispersion entre les variables, ce qui permet de stabiliser la variance et de rendre les données plus comparables. Cette approche est donc appropriée, car elle garantit des valeurs positives et améliore la gestion de la variabilité dans les données.}
+}
+ dans le but d'étudier une éventuelle relation logarithmique entre les variables.
+Examinons maintenant les corrélations ainsi que la répartition des élevages selon les nouvelles données.
+
+\newpage
+
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img_var_resp/points_corr_log.png}
+        \caption{Répartition des élevages}\label{fig:disp_log}
+    \end{subfigure}
+    \hspace{0.1cm}
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img_var_resp/corrplot_corr_log.png}
+        \caption{Matrice des correlations}\label{fig:corr_mat_log}
+    \end{subfigure}
+    \caption{Illustration étude logarithmique}\label{fig:etu_log}
+\end{figure}
+
+Obsorvons que cette fois ci, il semble y avoir une correlation plus evidante entre les données 
+TODO
+
+
 
 
 \subsection{Analyse des regroupements: réduction de dimensions et catégorisation}
@@ -153,5 +182,26 @@ Les analyses graphiques et le test de Pearson révèlent une absence de relation
     \caption{Résultats des tests de corrélation de Pearson entre les variables respiratoires.}\label{tab:correlation_results}
 \end{table}
 Constatons que la seule corrélation significative est celle des variables de toux et éternouments en engraissement. 
+\subsection{Test de pearson sur les corrélations du logarithme des variables réspiratoires}\label{annexe:pearson}
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{llccc}
+    \toprule
+    \textbf{Variable 1} & \textbf{Variable 2} & \textbf{Coefficient de corrélation} & \textbf{p-valeur} & \textbf{Significatif} \\
+    \midrule
+    Eter. PS & Eter. Eng & 0.119 & 0.251 & Non \\
+    Eter. PS & Toux PS & 0.377 & 0.000 & Oui \\
+    Eter. PS & Toux Eng & 0.061 & 0.557 & Non \\
+    Eter. Eng & Toux PS & 0.122 & 0.240 & Non \\
+    Eter. Eng & Toux Eng & 0.491 & 0.000 & Oui \\
+    Toux PS & Toux Eng & 0.315 & 0.002 & Oui \\
+    \bottomrule
+    \end{tabular}
+    \caption{Résultats des tests de corrélation de Pearson entre les variables respiratoires.}\label{tab:correlation_results}
+\end{table}
+TODO
 
+
+\subsection{Résultats régression linéaire entre les variables respiratoires et leur logarithme}
+TODO GLS with log transform 
 \end{document}

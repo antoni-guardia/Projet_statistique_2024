@@ -7,6 +7,8 @@
 \contentsline {subsection}{\numberline {2.2}Exploration des relations entre les variables respiratoires}{4}{subsection.2.2}%
 \contentsline {subsubsection}{\numberline {2.2.1}Relations linéaires entre les variables respiratoires}{4}{subsubsection.2.2.1}%
 \contentsline {subsubsection}{\numberline {2.2.2}Relations logarithmiques entre les variables respiratoires}{4}{subsubsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.3}Analyse des regroupements: réduction de dimensions et catégorisation}{4}{subsection.2.3}%
-\contentsline {section}{\numberline {A}Annexe: compléments de l'analyse sur les variables respiratoires}{5}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Test de pearson sur les corrélations des variables réspiratoires}{5}{subsection.A.1}%
+\contentsline {subsection}{\numberline {2.3}Analyse des regroupements: réduction de dimensions et catégorisation}{5}{subsection.2.3}%
+\contentsline {section}{\numberline {A}Annexe: compléments de l'analyse sur les variables respiratoires}{6}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Test de pearson sur les corrélations des variables réspiratoires}{6}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Test de pearson sur les corrélations du logarithme des variables réspiratoires}{6}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Résultats régression linéaire entre les variables respiratoires et leur logarithme}{6}{subsection.A.3}%

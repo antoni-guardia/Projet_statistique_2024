@@ -264,3 +264,89 @@ corrplot(M,
 
 ```
 Observons que les corrélations entre les variables logarithmiques sont beaucoup plus significatives que celles entre les variables non transformées.
+```{r, include=F, eval=F}
+# Images correlations linéaires
+par(mfrow = c(1, 1))
+
+colnames(var_a_expliquee) <- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+sd(na.omit(var_a_expliquee))
+df_transformed <- na.omit(var_a_expliquee)
+df_transformed[] <- lapply(na.omit(var_a_expliquee), function(x) log(x *sd(x) + 1))
+
+
+
+png("points_corr_log.png", height=650, width=950)
+pairs(df_transformed, cex.axis=2, cex.labels=3.5)
+dev.off()
+
+library(corrplot)
+M <- cor(df_transformed)
+colnames(M)<- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+rownames(M)<- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+par(mar = c(0, 0, 0, 0))
+
+png("corrplot_corr_log.png", height=650, width=950)
+
+corrplot(M,
+         method="color",
+         order = "AOE",
+         addCoef.col = 'black',
+         #tl.pos = 'd',
+         tl.col = 'black',
+         tl.srt = 45,
+         #type = 'upper',
+         # Adjust text sizes
+         tl.cex = 2.5,          # noms var
+         cl.cex = 1.75,          # Increase color legend text size
+         number.cex = 2,      # Increase size of correlation coefficients
+         # Optionally increase the size of the color gradient axis labels
+         mar = c(0, 0, 0, 0),   # Adjust margins
+         cex.axis = 1.5         # Increase axis label size
+)
+dev.off()
+```
+
+```{r, include=F, eval=F}# Assuming var_a_expliquee is a data frame containing the variables
+
+
+# Supprimer les lignes contenant des NA
+data_clean <- na.omit(df_transformed)
+
+# Récupérer les noms des variables
+var_names <- colnames(data_clean)
+n_vars <- length(var_names)
+
+# Nombre de paires possibles
+num_pairs <- choose(n_vars, 2)
+
+# Créer un data frame vide pour stocker les résultats
+results_df <- data.frame(
+  Variable1   = character(num_pairs),
+  Variable2   = character(num_pairs),
+  Correlation = numeric(num_pairs),
+  p_value     = numeric(num_pairs),
+  Significant = character(num_pairs),
+  stringsAsFactors = FALSE
+)
+
+# Générer toutes les combinaisons de 2 variables
+pairs <- combn(var_names, 2)
+
+# Boucle sur chaque paire pour effectuer le test de Pearson
+for (k in 1:ncol(pairs)) {
+  var1 <- pairs[1, k]
+  var2 <- pairs[2, k]
+  
+  test <- cor.test(data_clean[[var1]], data_clean[[var2]])
+  
+  results_df$Variable1[k]   <- var1
+  results_df$Variable2[k]   <- var2
+  results_df$Correlation[k] <- round(test$estimate, 3)
+  results_df$p_value[k]     <- round(test$p.value, 3)
+  results_df$Significant[k] <- ifelse(test$p.value < 0.05, "Yes", "No")
+}
+
+# Afficher le tableau des résultats
+print(results_df)
+
+```
