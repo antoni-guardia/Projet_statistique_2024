@@ -126,6 +126,17 @@ library(umap)
 donnees.umap <- umap(scaled_data_na, n_components = 2)
 plot(donnees.umap$layout)
 ```
+```{r, eval=F, include=F}
+#Création image CR
+png("umap_rep.png", height = 800, width = 1550)
+par(mar=c(5,5,3,3))
+plot(donnees.umap$layout,  pch = 19,
+     xlab = "Dimension 1", ylab = "Dimension 2", cex = 2, cex.axis = 2, cex.lab=2 )
+dev.off()
+
+```
+
+
 
 Cette fois-ci, on n'observe plus la répartition triangulaire. Passons à l'étape de classification hiérarchique :
 ```{r}
@@ -135,15 +146,51 @@ clusters <- cutree(class.hierarchique, k = 3)
 plot(class.hierarchique)
 
 ```
+```{r, include=F, eval=F}
+png("dendo_cha.png", height = 800, width = 1550)
+plot(class.hierarchique)
+dev.off()
+```
 
 Au vu du dendogramme, on décide de faire une classification en trois clusters qui se distribuent dans la plan ainsi :
 ```{r}
+colors <- brewer.pal(3, "Set2")
+
 clusters <- cutree(class.hierarchique, k = 3)
 plot(donnees.umap$layout, col = colors[clusters], pch = 19,
      main = "UMAP Layout with 3 Clusters",
      xlab = "UMAP 1", ylab = "UMAP 2")
 ```
+```{r, include=F, eval=F}
+colors <- brewer.pal(3, "Set2")
 
+png("umap_class_cha.png", height = 800, width = 1400)
+par(mar=c(7,8,3,3), mgp = c(5, 2, 0))
+plot(donnees.umap$layout, col = colors[clusters], pch = 19,
+     xlab = "Dimension 1", ylab = "Dimension 2", cex = 2.5, cex.axis = 3, cex.lab=3 )
+
+dev.off()
+png("dendo_cha.png", height = 800, width = 1400)
+par(mar=c(6.5,6.5,3,3), lwd=4)
+colors
+# Plot with nicer aesthetics
+plot(class.hierarchique, 
+     main = "", # Title of the plot
+     xlab = "Elévages",  # Label for the x-axis
+     sub="",
+     ylab = "Hauteur",        # Label for the y-axis
+     hang = -1, # Adjust the tree so that leaves are at the same level
+     cex = 1.5,
+     cex.lab = 3.5, 
+     lwd=2.5,
+     cex.axis=2.5)  # Reduce the size of the labels for better fit
+
+# Add colored rectangles to indicate clusters
+rect.hclust(class.hierarchique, k = 3, border = c("#FF0000", "#00FF00", "#0000FF"))  # Color each cluster differently
+
+# Close the PNG device to save the image
+dev.off()
+```
 Passons à l'interprétation des clusters:
 
 ```{r}

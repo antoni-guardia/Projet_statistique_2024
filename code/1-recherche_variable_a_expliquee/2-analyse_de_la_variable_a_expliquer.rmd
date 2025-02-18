@@ -60,7 +60,7 @@ for (var_name in noms) {
 On observe que les modalités ENG_malade et PS_malade montrent des valeurs bien distinctes, avec des moyennes et médianes significativement plus élevées que la modalité Sain, ce qui reflète probablement un état de santé différent. Les données montrent également une grande variabilité, notamment pour PS_malade, où les valeurs maximales sont particulièrement élevées, ce qui peut indiquer des cas extrêmes.
 ```{r,  warning=FALSE}
 
-meltData <- melt(scaled_data_na)
+meltData <- melt(donnees_na)
 boxplot(value ~ rep(na.omit(donnees$y), 4) * X2, data = meltData,
         horizontal =  TRUE,           
         outline = FALSE,  
@@ -75,7 +75,27 @@ boxplot(value ~ rep(na.omit(donnees$y), 4) * X2, data = meltData,
         names=c("", "PS_TX", " ", " ", "PS_ETER", " ", " ", "ENG_TX", " ", " ", "ENG_ETER", " " )
         )
 ```
+```{r, include=F, eval=F}
+meltData <- melt(donnees_na)
+meltData
+png("rep_cluster_var_orig.png", height = 800, width = 1450)
+par(mar=c(6.5,10,3,3), lwd=3, mgp = c(5, 1, 0))
+boxplot(value ~ rep(na.omit(donnees$y), 4) * variable, data = meltData,
+        horizontal =  TRUE,           
+        outline = FALSE,  
+        col = colors,  
+        frame = FALSE,
+        at = c(1,2,3,5,6,7,9,10,11,13,14,15),
+        main = "",
+        xlab = "Fréquence",
+        ylab = "",
+        las = 2,
+        cex.axis = 2.5,
+        names=c("", "Toux PS", " ", " ", "Eter. PS", " ", " ", "Toux Eng", " ", " ", "Eter. Eng", " " ),
+        cex.lab=3)
 
+dev.off()
+```
 
 ```{r,  warning=FALSE}
 par(mfrow = c(2, 2))

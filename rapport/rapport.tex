@@ -14,7 +14,7 @@
 \usepackage{hyperref}
 \usepackage{setspace} % Required for \onehalfspacing
 \usepackage{subcaption}
-
+\usepackage{longtable}
 
 \begin{document}
 
@@ -55,8 +55,7 @@ Christelle \textsc{Fablet} \\[0.6cm]
 \subsection{Description de la base de données}
 \newpage
 \section{Etude des variables respiratoires}
-Dans cette section, on se propose d’analyser les relations entre les variables caractérisant la respiration des porcs, en particulier les fréquences d’éternuements et de toux en engraissement et post-sevrage, afin d’identifier les liens existants. L’objectif est de regrouper ces variables et de simplifier l’étude en réduisant leur complexité.
-
+Dans cette section, on se propose d’analyser les relations entre les variables caractérisant la respiration des porcs, en particulier les fréquences d’éternuements et de toux en engraissement et post-sevrage, afin d’identifier les liens existants. L’objectif est de regrouper ces variables et de simplifier l’étude en réduisant leur complexité. Les analyses sont menées en omettant les variables manquantes.
 \subsection{Présentation et caractérisation des variables respiratoires}
 Dans cette partie, nous présentons et caractérisons les variables respiratoires mesurées chez les porcs. L'objectif est de mieux comprendre la répartition de ces données et d'identifier d'éventuelles particularités dans le comportement respiratoire des porcs.
 %\begin{table}[h]
@@ -127,7 +126,7 @@ Les analyses graphiques et le test de Pearson révèlent une absence de relation
 
 
 \subsubsection{Relations logarithmiques entre les variables respiratoires}
-Nous appliquons la transformation $x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1)$\text{ }\footnote{Nous utilisons la transformation \( x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1) \) plutôt que \( x \longmapsto \ln(x) \cdot \hat{{\sigma_x}} \) afin de tenir compte de la présence de zéros dans nos données, tout en conservant une fonction bien définie. Le facteur \( \text{sd}(x) \) (écart-type) est ajouté pour normaliser les données, en atténuant l'effet des différences de dispersion entre les variables, ce qui permet de stabiliser la variance et de rendre les données plus comparables. Cette approche est donc appropriée, car elle garantit des valeurs positives et améliore la gestion de la variabilité dans les données.} dans le but d'étudier une éventuelle relation logarithmique entre les variables.
+Nous appliquons la transformation $x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1)$\text{ }\footnote{Nous utilisons la transformation \( x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1) \) plutôt que \( x \longmapsto \ln(x) \cdot \hat{{\sigma_x}} \) afin de tenir compte de la présence de zéros dans nos données, tout en conservant une fonction bien définie. Le facteur \( \hat{{\sigma_x}}  \) (écart-type) est ajouté pour normaliser les données, en atténuant l'effet des différences de dispersion entre les variables, ce qui permet de stabiliser la variance et de rendre les données plus comparables.}
 Examinons maintenant les corrélations ainsi que la répartition des élevages selon les nouvelles données.
 
 \newpage
@@ -148,13 +147,29 @@ Examinons maintenant les corrélations ainsi que la répartition des élevages s
     \caption{Illustration étude logarithmique}\label{fig:etu_log}
 \end{figure}
 
-Obsorvons que cette fois ci, il semble y avoir une correlation plus evidante entre les données 
-TODO
+Cette fois-ci, nous observons qu'il pourrait exister une relation linéaire entre les logarithmes des variables respiratoires (\ref{fig:disp_log}). Notamment, cette relation linéaire est particulièrement visible pour les variables toux post-sevrage et éternuements post-sevrage.
+Observons également que dans (\ref{fig:disp_log}), trois groupes de points se distinguent clairement. En considérant les deux variables précédentes, ces groupes peuvent être interprétés comme suit:
+\vspace{0.25cm}
+\begin{itemize}
+\item Absence d’éternuements en post-sevrage
+\item Absence de toux en post-sevrage
+\item Présence simultanée de toux et d’éternuements en post-sevrage
+\end{itemize}
+\vspace{0.25cm}
+C’est dans ce dernier groupe que l'on observe une relation plus ou moins linéaire entre ces deux variables.
+Dans (\ref{fig:corr_mat_log}), cette relation est à nouveau perceptible entre les variables d'engraissement et celles du post-sevrage. De plus, une corrélation relativement forte est mise en évidence entre la toux en post-sevrage et l’engraissement.
+Ces observations graphiques sont confirmées par les tests de Pearson (\ref{annexe:pearson_log}).
 
+Cependant, il paraît difficile d’expliquer une variable à partir des trois autres, même au sein du sous-groupe d’élevages qui semble le mieux s’adapter à un modèle linéaire, en raison de la forte amplitude du bruit\footnote{En (\ref{annexe:reg_lin_log}), une régression linéaire est détaillée afin de modéliser le logarithme des toux en post-sevrage. Les résultats obtenus montrent toutefois une capacité explicative limitée du modèle, avec un coefficient de détermination de  $R^2=0.4$}. De plus, les autres sous-groupes d’élevages ne semblent pas non plus adaptés à ce type d’approche.
 
+\subsection{Simplification des variables respiratoires}
+À cette étape, nous proposons de regrouper les élevages en différentes classes afin de réduire le nombre de variables explicatives en une seule. Pour ce faire, nous utilisons la méthode de réduction de dimension UMAP\footnote{\textit{Uniform Manifold Approximation and Projection} en anglais. C’est une technique de réduction de dimension qui permet de représenter des données complexes dans un espace de dimension inférieure tout en conservant au mieux leur structure.}, qui s’adapte bien aux structures non linéaires de nos variables. Ensuite, nous appliquons une classification hiérarchique ascendante afin de constituer des groupes d’élevages, qui seront ensuite analysés et interprétés.
+\subsubsection{Réduction des dimensions}
+On fait le choix arbitraire de réduire les variables en deux dimensions avec UMAP et on apliqque la classification hiérarchique ascendante (CHA) on obtient alors les résultat suivant:
 
+\newpage
 
-\subsection{Analyse des regroupements: réduction de dimensions et catégorisation}
+\section{Imputation des variables manquantes}
 
 \newpage
 \appendix
@@ -199,6 +214,58 @@ Constatons que la seule corrélation significative est celle des variables de to
 TODO
 
 
-\subsection{Résultats régression linéaire entre les variables respiratoires et leur logarithme}
+\subsection{Résultats régression linéaire entre les variables respiratoires et leur logarithme}\label{annexe:reg_lin_log}
 TODO GLS with log transform 
+
+\subsection{Résultats classification}
+
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Variable} & \textbf{v.test} & \textbf{$\bar{x}$ (var)} & \textbf{$\bar{x}$ (total)} & \textbf{$\sigma_x$ (var)} \\
+        \midrule
+        ENG\_Eter\_freq & 6.73 & 5.55 & 2.20 & 3.94 \\
+        ENG\_Tx\_freq  & 4.67 & 16.31 & 7.04 & 19.46 \\
+        \midrule
+        \textbf{p.value} & 1.75e-11 & & & \\
+        \bottomrule
+    \end{tabular}
+    \caption{ENG\_malade\_var}
+\end{table}
+    
+    % Table for PS_malade
+\begin{table}[ht]
+    \centering
+        \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Variable} & \textbf{v.test} & \textbf{$\bar{x}$ (var)} & \textbf{$\bar{x}$ (total)} & \textbf{$\sigma_x$ (var)} \\
+        \midrule
+        PS\_Eter\_freq & 6.35 & 26.39 & 9.27 & 18.71 \\
+        PS\_Tx\_freq  & 4.58 & 21.98 & 6.50 & 32.00 \\
+        \midrule
+        \textbf{p.value} & 2.21e-10 & & & \\
+        \bottomrule
+    \end{tabular}
+    \caption{PS\_malade\_var}
+\end{table}
+    
+    % Table for Sain
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{lcccc}
+        \toprule
+        \textbf{Variable} & \textbf{v.test} & \textbf{$\bar{x}$ (var)} & \textbf{$\bar{x}$ (total)} & \textbf{$\sigma_x$ (var)} \\
+        \midrule
+        PS\_Tx\_freq    & -2.66 & 1.34 & 6.50 & 2.55 \\
+        ENG\_Tx\_freq   & -3.53 & 1.92 & 7.04 & 3.15 \\
+        PS\_Eter\_freq  & -4.19 & 2.78 & 9.27 & 3.59 \\
+        ENG\_Eter\_freq & -4.92 & 0.41 & 2.20 & 0.53 \\
+        \midrule
+        \textbf{p.value} & 7.75e-03 & & & \\
+        \bottomrule
+    \end{tabular}
+    \caption{Sain\_var}
+\end{table}
+
 \end{document}
