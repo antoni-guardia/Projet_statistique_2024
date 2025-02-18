@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.12.12)  18 FEB 2025 11:34
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.12.12)  18 FEB 2025 11:39
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -350,14 +350,7 @@ Package: subcaption 2020/10/07 v1.3j Sub-captions (AR)
 File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count321
 \l__pdf_internal_box=\box55
-) (./rapport.aux
-
-LaTeX Warning: Label `annexe:pearson' multiply defined.
-
-
-LaTeX Warning: Label `tab:correlation_results' multiply defined.
-
-)
+) (./rapport.aux)
 \openout1 = `rapport.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 19.
@@ -507,54 +500,49 @@ Overfull \hbox (3.42613pt too wide) in paragraph at lines 122--125
  []
 
 [4 <./img_var_resp/points_corr_lin.png> <./img_var_resp/corrplot_corr_lin.png (PNG copy)>]
-<img_var_resp/points_corr_log.png, id=135, 953.5625pt x 652.4375pt>
+<img_var_resp/points_corr_log.png, id=136, 953.5625pt x 652.4375pt>
 File: img_var_resp/points_corr_log.png Graphic file (type png)
 <use img_var_resp/points_corr_log.png>
-Package pdftex.def Info: img_var_resp/points_corr_log.png  used on input line 142.
+Package pdftex.def Info: img_var_resp/points_corr_log.png  used on input line 139.
 (pdftex.def)             Requested size: 220.28354pt x 150.71452pt.
-<img_var_resp/corrplot_corr_log.png, id=136, 953.5625pt x 652.4375pt>
+<img_var_resp/corrplot_corr_log.png, id=137, 953.5625pt x 652.4375pt>
 File: img_var_resp/corrplot_corr_log.png Graphic file (type png)
 <use img_var_resp/corrplot_corr_log.png>
-Package pdftex.def Info: img_var_resp/corrplot_corr_log.png  used on input line 148.
+Package pdftex.def Info: img_var_resp/corrplot_corr_log.png  used on input line 145.
 (pdftex.def)             Requested size: 220.28354pt x 150.71452pt.
  [5 <./img_var_resp/points_corr_log.png> <./img_var_resp/corrplot_corr_log.png (PNG copy)>]
-Overfull \hbox (14.31984pt too wide) in paragraph at lines 165--165
+Overfull \hbox (14.31984pt too wide) in paragraph at lines 162--162
 []\T1/cmr/bx/n/14.4 Annexe : compléments de l'analyse sur les variables respiratoires 
  []
 
 
-Overfull \hbox (23.06161pt too wide) in paragraph at lines 185--185
+Overfull \hbox (23.06161pt too wide) in paragraph at lines 182--182
 []\T1/cmr/bx/n/12 Test de pearson sur les corrélations du logarithme des variables réspiratoires 
  []
 
 [6] (./rapport.aux)
-
-LaTeX Warning: There were multiply-defined labels.
-
 Package rerunfilecheck Info: File `rapport.out' has not changed.
 (rerunfilecheck)             Checksum: ADC3069459FEB7C07CA68F1AC8809176;4405.
  ) 
 Here is how much of TeX's memory you used:
- 13158 strings out of 480247
- 214216 string characters out of 5896150
- 526084 words of memory out of 5000000
- 30888 multiletter control sequences out of 15000+600000
+ 13159 strings out of 480247
+ 214254 string characters out of 5896150
+ 525253 words of memory out of 5000000
+ 30890 multiletter control sequences out of 15000+600000
  483919 words of font info for 57 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 60i,10n,63p,757b,501s stack positions out of 5000i,500n,10000p,200000b,80000s
-pdfTeX warning (dest): name{Hfootnote.4} has been referenced but does not exist, replaced by a fixed one
-
+ 60i,9n,63p,922b,501s stack positions out of 5000i,500n,10000p,200000b,80000s
 pdfTeX warning (dest): name{Hfootnote.3} has been referenced but does not exist, replaced by a fixed one
 
 pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exist, replaced by a fixed one
 
 pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist, replaced by a fixed one
 
-{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0600.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt0800.pfb>
-Output written on rapport.pdf (7 pages, 669115 bytes).
+{/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt0800.pfb>
+Output written on rapport.pdf (7 pages, 697570 bytes).
 PDF statistics:
- 232 PDF objects out of 1000 (max. 8388607)
- 174 compressed objects within 2 object streams
- 31 named destinations out of 1000 (max. 500000)
+ 244 PDF objects out of 1000 (max. 8388607)
+ 180 compressed objects within 2 object streams
+ 30 named destinations out of 1000 (max. 500000)
  140 words of extra memory for PDF output out of 10000 (max. 10000000)
 

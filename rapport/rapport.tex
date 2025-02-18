@@ -127,10 +127,7 @@ Les analyses graphiques et le test de Pearson révèlent une absence de relation
 
 
 \subsubsection{Relations logarithmiques entre les variables respiratoires}
-Nous appliquons la transformation $x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1)$
-\footnote{\footnote{Nous utilisons la transformation \( x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1) \) plutôt que \( x \longmapsto \ln(x) \cdot \hat{{\sigma_x}} \) afin de tenir compte de la présence de zéros dans nos données, tout en conservant une fonction bien définie. Le facteur \( \text{sd}(x) \) (écart-type) est ajouté pour normaliser les données, en atténuant l'effet des différences de dispersion entre les variables, ce qui permet de stabiliser la variance et de rendre les données plus comparables. Cette approche est donc appropriée, car elle garantit des valeurs positives et améliore la gestion de la variabilité dans les données.}
-}
- dans le but d'étudier une éventuelle relation logarithmique entre les variables.
+Nous appliquons la transformation $x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1)$\text{ }\footnote{Nous utilisons la transformation \( x \longmapsto \ln(x \cdot \hat{{\sigma_x}} + 1) \) plutôt que \( x \longmapsto \ln(x) \cdot \hat{{\sigma_x}} \) afin de tenir compte de la présence de zéros dans nos données, tout en conservant une fonction bien définie. Le facteur \( \text{sd}(x) \) (écart-type) est ajouté pour normaliser les données, en atténuant l'effet des différences de dispersion entre les variables, ce qui permet de stabiliser la variance et de rendre les données plus comparables. Cette approche est donc appropriée, car elle garantit des valeurs positives et améliore la gestion de la variabilité dans les données.} dans le but d'étudier une éventuelle relation logarithmique entre les variables.
 Examinons maintenant les corrélations ainsi que la répartition des élevages selon les nouvelles données.
 
 \newpage
@@ -182,7 +179,7 @@ TODO
     \caption{Résultats des tests de corrélation de Pearson entre les variables respiratoires.}\label{tab:correlation_results}
 \end{table}
 Constatons que la seule corrélation significative est celle des variables de toux et éternouments en engraissement. 
-\subsection{Test de pearson sur les corrélations du logarithme des variables réspiratoires}\label{annexe:pearson}
+\subsection{Test de pearson sur les corrélations du logarithme des variables réspiratoires}\label{annexe:pearson_log}
 \begin{table}[ht]
     \centering
     \begin{tabular}{llccc}
@@ -197,7 +194,7 @@ Constatons que la seule corrélation significative est celle des variables de to
     Toux PS & Toux Eng & 0.315 & 0.002 & Oui \\
     \bottomrule
     \end{tabular}
-    \caption{Résultats des tests de corrélation de Pearson entre les variables respiratoires.}\label{tab:correlation_results}
+    \caption{Résultats des tests de corrélation de Pearson entre les variables respiratoires.}\label{tab:correlation_log_results}
 \end{table}
 TODO
 
