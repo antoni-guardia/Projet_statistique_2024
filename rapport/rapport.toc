@@ -1,0 +1,12 @@
+\babel@toc {french}{}\relax 
+\contentsline {section}{\numberline {1}Introduction}{2}{section.1}%
+\contentsline {subsection}{\numberline {1.1}Introduction du sujet}{2}{subsection.1.1}%
+\contentsline {subsection}{\numberline {1.2}Description de la base de données}{2}{subsection.1.2}%
+\contentsline {section}{\numberline {2}Etude des variables respiratoires}{3}{section.2}%
+\contentsline {subsection}{\numberline {2.1}Présentation et caractérisation des variables respiratoires}{3}{subsection.2.1}%
+\contentsline {subsection}{\numberline {2.2}Exploration des relations entre les variables respiratoires}{4}{subsection.2.2}%
+\contentsline {subsubsection}{\numberline {2.2.1}Relations linéaires entre les variables respiratoires}{4}{subsubsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.2}Relations logarithmiques entre les variables respiratoires}{4}{subsubsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.3}Analyse des regroupements: réduction de dimensions et catégorisation}{4}{subsection.2.3}%
+\contentsline {section}{\numberline {A}Annexe: compléments de l'analyse sur les variables respiratoires}{5}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Test de pearson sur les corrélations des variables réspiratoires}{5}{subsection.A.1}%

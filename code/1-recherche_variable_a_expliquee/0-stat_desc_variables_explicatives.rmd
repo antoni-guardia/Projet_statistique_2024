@@ -6,7 +6,7 @@ On commence par télécharger les variables à expliquer.
 ```{r, fig.width=10, fig.height=15}
 rm(list=ls())
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
-donnees <- readRDS("donnees_etape_0.Rdata", "rb")
+donnees <- readRDS("suppression_85_NA.Rdata", "rb")
 var_a_expliquee <- donnees[c("PS_Eter_freq", "ENG_Eter_freq", "PS_Tx_freq", "ENG_Tx_freq")]
 summary(var_a_expliquee)
 library(gplots)
@@ -40,6 +40,69 @@ heatmap.2(M_log_ordered,
 )
 
 ```
+
+```{r, eval=F, include=F}
+
+color_palette <-  as.vector(paletteer::paletteer_d("colorBlindness::Blue2DarkOrange12Steps"))
+M_log <- M
+
+colnames(M) <- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+has_na <- apply(M_log, 1, function(x) any(is.na(x)))
+M_log_na <- M_log[has_na, ]       # lignes avec NA
+M_log_non_na <- M_log[!has_na, ]  # lignes sans NA
+dist_matrix <- dist(M_log_non_na, method = "manhattan")
+hc <- hclust(dist_matrix, method = "mcquitty")
+M_log_non_na <- M_log_non_na[hc$order, ]
+M_log_ordered <- rbind(M_log_na, M_log_non_na)
+# Load the fields package
+library(fields)
+# install.packages("fields")
+# Save the plot as a PNG file
+color_palette <- colorRampPalette(color_palette)(100)
+M_log_ordered[is.na(M_log_ordered)] <- max(M_log_ordered[!is.na(M_log_ordered)]) + 10
+
+matrix <- t(M_log_ordered)
+nrows <- nrow(matrix)
+
+n.colors <- length(color_palette)
+col.key <- data.frame("color" = color_palette,
+                      "value" = seq(from = min(matrix), to = max(matrix)-1, along.with = 1:n.colors))
+
+temp <- matrix[2,]
+
+# Swap columns 2 and 3
+matrix[2,] <- matrix[3,]
+matrix[3,] <- temp
+
+png("rep_var_resp.png", height = 800, width = 1550)
+
+# Main heatmap plot (occupies 0 to 0.9 of the width)
+par(fig = c(0, 0.86, 0, 1), mar = c(4,7,1,0), cex.axis = 3, mgp = c(3, 2, 0))
+image(matrix,
+      col = c(color_palette, "black"),
+      axes = FALSE,
+      ylab = "Elevages",
+      xlab = "",
+      cex.lab = 3.5)
+axis(1, at = seq(0, 1, length.out = nrow(matrix)), labels = rownames(matrix))
+
+# Gradient legend (from 0.9 to 0.95 of the width)
+par(fig = c(.86,0.95,.3,.7), mar = c(0,3,1,3.5), new = TRUE, cex.axis=2.2)
+plot(x = rep(1,length(col.key$value)), y = col.key$value, xlim = c(0,1), col = col.key$color, 
+     type = "n", xaxs = "i", yaxs = "i", ann = FALSE, axes = FALSE)
+segments(x0 = 0.5, x1 = 1, y0 = col.key$value, y1 = col.key$value, col = col.key$color, lwd = 10)
+axis(side = 4, lwd = 0, las = 2, line = -.75)
+
+# Black square and NA label (after the gradient, from 0.95 to 1)
+par(fig = c(0.95, 1, 0.3, 0.7), new = TRUE, mar = c(0, 0, 0, 0))
+plot.new()
+plot.window(xlim = c(0,1), ylim = c(0,1))
+rect(0.3, 0.43, 0.7, 0.55, col = "black", border = "black")
+text(0.5, 0.35, "NA", cex = 2)
+
+dev.off()
+
+```
 On remarque qu'il y a très peu de valeurs manquantes, et que celles si sont corrélés entre elles. Regardons la répartition des valeurs.
 ```{r}
 par(mfrow = c(2, 2))
@@ -59,7 +122,31 @@ for (i in 1:4) {
 par(mfrow = c(1, 1))
 pairs(var_a_expliquee)
 ```
+```{r, eval=F, include=F}
+# Image densité var resp
+noms <- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+png("dens_var_resp.png", height=450, width=850)
+par(mfrow = c(2, 2))
+par(mar = c(5, 5, 4, 2)) 
 
+for (i in 1:4) {
+    dens <- density(na.omit(var_a_expliquee[,i]), bw = "nrd0")
+
+    plot(
+        dens,                
+        main = noms[i],
+        xlab = "Fréquence",                   
+        ylab = "Densité",                 
+        col = "black",                    
+        lwd = 2,
+        cex.main=2,
+        cex.lab = 1.8,
+        cex.axis = 1.5,
+    )
+}
+dev.off()
+par(mfrow = c(1, 1))
+```
 
 On observe dans les 4 variables d'intérêt une forte concentration de la densité en 0. Intéressons nous aux corrélations des variables.
 
@@ -74,6 +161,90 @@ corrplot(M,
          tl.col = 'black',
          type = 'upper'
         )
+
+```
+```{r, include=F, eval=F}
+# Images correlations linéaires
+par(mfrow = c(1, 1))
+
+colnames(var_a_expliquee) <- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+
+cor.test(var_a_expliquee$"Eter. PS", var_a_expliquee$"Eter. Eng"  )
+png("points_corr_lin.png", height=650, width=950)
+pairs(var_a_expliquee, cex.axis=2, cex.labels=3.5)
+dev.off()
+
+library(corrplot)
+M <- cor(na.omit(var_a_expliquee))
+colnames(M)<- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+rownames(M)<- c("Eter. PS",  "Eter. Eng" , "Toux PS", "Toux Eng")
+par(mar = c(0, 0, 0, 0))
+
+png("corrplot_corr_lin.png", height=650, width=950)
+
+corrplot(M,
+         method="color",
+         order = "AOE",
+         addCoef.col = 'black',
+         #tl.pos = 'd',
+         tl.col = 'black',
+         tl.srt = 45,
+         #type = 'upper',
+         # Adjust text sizes
+         tl.cex = 2.5,          # noms var
+         cl.cex = 1.75,          # Increase color legend text size
+         number.cex = 2,      # Increase size of correlation coefficients
+         # Optionally increase the size of the color gradient axis labels
+         mar = c(0, 0, 0, 0),   # Adjust margins
+         cex.axis = 1.5         # Increase axis label size
+)
+dev.off()
+```
+
+```{r, include=F, eval=F}# Assuming var_a_expliquee is a data frame containing the variables
+
+# Assurez-vous que var_a_expliquee est un data frame
+var_a_expliquee <- as.data.frame(var_a_expliquee)
+
+# Supprimer les lignes contenant des NA
+data_clean <- na.omit(var_a_expliquee)
+
+# Récupérer les noms des variables
+var_names <- colnames(data_clean)
+n_vars <- length(var_names)
+
+# Nombre de paires possibles
+num_pairs <- choose(n_vars, 2)
+
+# Créer un data frame vide pour stocker les résultats
+results_df <- data.frame(
+  Variable1   = character(num_pairs),
+  Variable2   = character(num_pairs),
+  Correlation = numeric(num_pairs),
+  p_value     = numeric(num_pairs),
+  Significant = character(num_pairs),
+  stringsAsFactors = FALSE
+)
+
+# Générer toutes les combinaisons de 2 variables
+pairs <- combn(var_names, 2)
+
+# Boucle sur chaque paire pour effectuer le test de Pearson
+for (k in 1:ncol(pairs)) {
+  var1 <- pairs[1, k]
+  var2 <- pairs[2, k]
+  
+  test <- cor.test(data_clean[[var1]], data_clean[[var2]])
+  
+  results_df$Variable1[k]   <- var1
+  results_df$Variable2[k]   <- var2
+  results_df$Correlation[k] <- round(test$estimate, 3)
+  results_df$p_value[k]     <- round(test$p.value, 3)
+  results_df$Significant[k] <- ifelse(test$p.value < 0.05, "Yes", "No")
+}
+
+# Afficher le tableau des résultats
+print(results_df)
 
 ```
 

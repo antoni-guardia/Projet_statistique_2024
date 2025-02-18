@@ -48,7 +48,7 @@ print(top_contrib)
 ```{r}
 # Nouvelle ACP en excluant les individus influents
 donnees.PCA2 <- PCA(scaled_data, ind.sup = top_contrib, graph=FALSE)
-plot(donnees.PCA2, choix="var")ch
+plot(donnees.PCA2, choix="var")
 ```
 
 ```{r}
