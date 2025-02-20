@@ -9,72 +9,15 @@ setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 donnees <- readRDS("supp_p_val_10.Rdata", "rb")
 var_p_val <- readRDS("variables_selectionnees_p_valeur.Rdata", "rb")
 nrow(var_p_val)
-```
-# Suppression variables doublées
-Après sélection des données, on a un total de 
-```{r}
-length(donnees)
-```
-
-Parmis celles ci, il y a des variables qualitatives issues de la même variable quantitative dont on enelève celles ayant une p-valeur plus élevée.
-```{r}
-# débit des abreuvoirs en L/min
-
-var_noms_eau <- c("T10_PS_EauDebi_1",
-                  "T10_PS_EauDebi_2")
-var_p_val[var_p_val$variable %in% var_noms_eau,] # affichage des p_val par variable
-# Recherche nom variable à garder
-var_a_garder_eau <- var_p_val[ var_p_val$p_value == min(var_p_val[var_p_val$variable %in% var_noms_eau,]$p_value),]$variable
-# On crée la liste des noms de variables à supprimer
-noms_a_supp_eau <- var_noms_eau[var_noms_eau != var_a_garder_eau]
-# Affichage nom variable avec la plus petite p-valeur
-var_a_garder_eau
-
-# Température extérieure
-
-var_noms_temp <- c("T01_T_EXT_1", 
-                   "T01_T_EXT_2",
-                   "T01_T_EXT_3",
-                   "T01_T_EXT_4",
-                   "T01_T_EXT")
-var_p_val[var_p_val$variable %in% var_noms_temp,]
-var_a_garder_temp <- var_p_val[ var_p_val$p_value == min(var_p_val[var_p_val$variable %in% var_noms_temp,]$p_value),]$variable
-noms_a_supp_temp <- var_noms_temp[var_noms_temp != var_a_garder_temp]
-var_a_garder_temp
-
-# Griffures
-
-var_noms_grif <- c("T14_ENG_NoteIndPoGrif_2",
-                   "T14_ENG_NoteIndPoGrifMOY",
-                   "T14_ENG_NoteIndPoGrifMED")
-var_p_val[var_p_val$variable %in% var_noms_grif,]
-var_a_garder_grif <- var_p_val[ var_p_val$p_value == min(var_p_val[var_p_val$variable %in% var_noms_grif,]$p_value),]$variable
-noms_a_supp_grif <- var_noms_grif[var_noms_grif != var_a_garder_grif]
-var_a_garder_grif
-```
-
-On garde ainsi dans les catégories respectives : 
-
-* T10_PS_EauDebi_2
-* T01_T_EXT_3
-* T14_ENG_NoteIndPoGrifMED
-```{r}
-# crée liste des noms à supprimer
-noms_suppr <- c(noms_a_supp_eau, noms_a_supp_temp, noms_a_supp_grif)
-donnees <- donnees[ , ! colnames(donnees) %in% noms_suppr]
-var_p_val <- var_p_val[  !var_p_val$variable %in% noms_suppr,]
-
-```
-# Noms variables restantes 
-```{r}
-colnames(donnees)
+load("supp_p_val_10_clem.Rdata")
+donnees <- bdd_apres_pvalue_10
 ```
 
 # Affichage répartition selon variable à expliquer
 Commençons avec variables qualitatives:
 
 ```{r}
-# On crée un vecteur contenant le nom des variables factor
+
 factor_var <- colnames(donnees)[sapply(donnees, FUN= function(x){is.factor(x)})]
 
 

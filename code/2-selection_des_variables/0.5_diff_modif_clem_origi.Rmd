@@ -1,26 +1,32 @@
 ```{r, include=FALSE}
 # Nettoyage de l'environnement
 rm(list = ls())
-
-# Chargement des librairies
-library(dplyr)
-library(corrplot)
-library(Exact) 
-library(ggplot2)
-library(DescTools)
-
-# install.packages("Exact")
-# install.packages("DescTools")
+# install.packages("writexl")
 
 # Définition du répertoire de travail
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 
 # Chargement du fichier .rds
+donnees.1 <- readRDS("supp_p_val_10.Rdata", "rb")
+var_p_val <- readRDS("variables_selectionnees_p_valeur.Rdata", "rb")
+load("supp_p_val_10_clem.Rdata")
+donnees.clem <- bdd_apres_pvalue_10
+ncol(donnees.clem)
+library(DescTools)
+nouvelles_donnees_clem <- setdiff(colnames(donnees.clem), colnames(donnees))
+noms.clem <- colnames(donnees.clem)
+noms.clem
+library(writexl)
 donnees <- readRDS("nomenclature_y_supp_anciennes.Rdata", "rb")
 
-data <- donnees[, -1]
-nom_colonnes <- colnames(data)
+write_xlsx(data.frame(noms.clem), "dict_new_df2.xlsx")
+
 ```
+
+```{r}
+length(donnees.clem)
+```
+# Création table p_valeurs
 
 
 ## Étude univariée du lien entre Y et les variables X
@@ -114,32 +120,10 @@ etude_univariee <- function(Y, data) {
 ```
 
 ## Sélection des variables explicatives
-```{r, warning=FALSE}
-resultats <- etude_univariee(Y = colnames(data)[510], data = data)
-
-p_values <- as.numeric(unlist(resultats))
-p_select <- 0.1
-
-density_values <- density(p_values)
-
-ggplot(data.frame(p_values), aes(x = p_values)) +
-  geom_density(fill = "blue", alpha = 0.5) +
-  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1) +
-  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
-  labs(title = "Densité des P-valeurs",
-       x = "p-valeur",
-       y = "Densité") +
-  theme_minimal()
-
-ggplot(data.frame(p_values), aes(x = p_values)) +
-  stat_ecdf(geom = "step", color = "blue", size = 1) +
-  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1)  +
-  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
-  labs(title = "Densité cumulée des p-valeurs",
-       x = "P-Valeur",
-       y = "Probabilité cumulée") +
-  theme_minimal()
-length(p_values[p_values <= p_select])
+```{r}
+noms.clem
+resultats <- etude_univariee(Y = noms.clem[64], data = donnees.clem)
+write_xlsx(data.frame(resultats), "avec_p_val.xlsx")
 ```
 
 En gardant une p-valeur de 0,10, nous sélectionnons 61 variables. Nous faisons ce choix de p-valeur afin de limiter à 10 % les chances de nous tromper lors de la considération ou non d’une variable.
@@ -159,61 +143,37 @@ sorted_p_values_df <- p_values_df[p_values_df$p_value <= p_select, ]
 
 saveRDS(sorted_p_values_df, "variables_selectionnees_p_valeur.Rdata")
 ```
+# Affichage répartition selon variable à expliquer
+Commençons avec variables qualitatives:
+
 ```{r}
+# On crée un vecteur contenant le nom des variables factor
+factor_var <- colnames(donnees.clem)[sapply(donnees.clem, FUN= function(x){is.factor(x)})]
 
-# On garde les indices des 100 avec la lus petite p valeur
-p_100_data <- data[, c(sorted_p_values_df$variable, "y")]
-
-column_types <- sapply(data, class)
-
-comparation_typage_dataframe <- function(df1, df2) {
-  # On crée une variable de type 
-  types_df1 <- sapply(df1, class)
-  types_df2 <- sapply(df2, class)
-  
-  # On calcule la proportion des types
-  type_proportions_df1 <- table(types_df1) / length(types_df1)
-  type_proportions_df2 <- table(types_df2) / length(types_df2)
-  
-  # On regarde qu'il n'y ait pas une table avec un type de moins
-  all_types <- unique(c(names(type_proportions_df1), names(type_proportions_df2)))
-  
-  # On crée le dataframe de comparaison
-  comparison_df <- data.frame(
-    DataType = all_types,
-    Proportion_df1 = sapply(all_types, function(x) type_proportions_df1[x]),
-    Proportion_df2 = sapply(all_types, function(x) type_proportions_df2[x])
-  )
-  
-  # On remplace les valeurs manquantes par 0
-  comparison_df$Proportion_df1[is.na(comparison_df$Proportion_df1)] <- 0
-  comparison_df$Proportion_df2[is.na(comparison_df$Proportion_df2)] <- 0
-  
-  return(comparison_df)
+for (col in factor_var) {
+    # On parcourt les noms des variables
+  if (!(col %in% c("y", "CODE_ELEVAGE"))) {  # Si la colonne n'est pas la colonne y ou CODE_ELEVAGE
+    cat("Tableau de contingence entre les variables y et", col, ":\n") 
+    print(table(donnees.clem$y, donnees.clem[[col]])) # Affichage tableau de contingence
+    cat("\n")  # Ajoute ligne vide pour une meilleure lisibilité
+  }
 }
-comparison_df <- comparation_typage_dataframe(data, p_100_data)
-comparison_df
 ```
 
-On observe des différences notables de répartition. Vérifions ces observations à l’aide du test du chi^2 :
-
+Continuons avec variables quantitatives:
 ```{r}
-var_1 <- comparison_df$Proportion_df1
-var_2 <- comparison_df$Proportion_df2
-
-tab_contingence <- matrix(c(var_1, var_2), 
-                            nrow = 2, 
-                            byrow = TRUE)
-chisq.test(tab_contingence*100)
-length(p_100_data)
-head(p_100_data)
+# On crée un vecteur contenant le nom des variables numeric
+numeric_var <- colnames(donnees.clem)[sapply(donnees.clem, FUN= function(x){is.numeric(x)})]
+for (col in numeric_var) {
+    # On parcourt les noms des variables
+  if (!(col %in% c("y", "CODE_ELEVAGE"))) {  # Si la colonne n'est pas la colonne y ou CODE_ELEVAGE
+    cat("Boxplot entre les variables y et", col, ":\n") 
+    boxplot(donnees.clem[[col]] ~ donnees.clem$y, outline=F) # Affichage tableau de contingence
+  }
+}
 ```
-
-On a une p-valeur de 0,04. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
-
-```{r, include=FALSE, eval=T}
-length(p_100_data)
-p_100_data <- cbind(donnees$CODE_ELEVAGE, p_100_data)
-colnames(p_100_data)[1] <- "CODE_ELEVAGE"
-saveRDS(p_100_data, "supp_p_val_10.Rdata")
+```{r, include=F, eval=F}
+ncol(donnees)
+saveRDS(var_p_val, "df_var_p-val.Rdata")
+saveRDS(donnees, "suppression_doublons.Rdata")
 ```

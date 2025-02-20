@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.12.12)  18 FEB 2025 16:53
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2024.12.12)  18 FEB 2025 19:05
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -532,25 +532,41 @@ File: img_var_resp/corrplot_corr_log.png Graphic file (type png)
 <use img_var_resp/corrplot_corr_log.png>
 Package pdftex.def Info: img_var_resp/corrplot_corr_log.png  used on input line 144.
 (pdftex.def)             Requested size: 220.28354pt x 150.71452pt.
- [5 <./img_var_resp/points_corr_log.png> <./img_var_resp/corrplot_corr_log.png (PNG copy)>] [6]
-Overfull \hbox (14.31984pt too wide) in paragraph at lines 177--177
+ [5 <./img_var_resp/points_corr_log.png> <./img_var_resp/corrplot_corr_log.png (PNG copy)>]
+<img_var_resp/umap_class_cha.png, id=170, 1405.25pt x 803.0pt>
+File: img_var_resp/umap_class_cha.png Graphic file (type png)
+<use img_var_resp/umap_class_cha.png>
+Package pdftex.def Info: img_var_resp/umap_class_cha.png  used on input line 176.
+(pdftex.def)             Requested size: 220.28354pt x 125.87277pt.
+<img_var_resp/dendo_cha.png, id=171, 1405.25pt x 803.0pt>
+File: img_var_resp/dendo_cha.png Graphic file (type png)
+<use img_var_resp/dendo_cha.png>
+Package pdftex.def Info: img_var_resp/dendo_cha.png  used on input line 182.
+(pdftex.def)             Requested size: 220.28354pt x 125.87277pt.
+<img_var_resp/rep_cluster_var_orig.png, id=173, 1455.4375pt x 803.0pt>
+File: img_var_resp/rep_cluster_var_orig.png Graphic file (type png)
+<use img_var_resp/rep_cluster_var_orig.png>
+Package pdftex.def Info: img_var_resp/rep_cluster_var_orig.png  used on input line 192.
+(pdftex.def)             Requested size: 359.64394pt x 198.42148pt.
+ [6 <./img_var_resp/umap_class_cha.png (PNG copy)> <./img_var_resp/dendo_cha.png (PNG copy)> <./img_var_resp/rep_cluster_var_orig.png (PNG copy)>] [7]
+Overfull \hbox (14.31984pt too wide) in paragraph at lines 209--209
 []\T1/cmr/bx/n/14.4 Annexe : compléments de l'analyse sur les variables respiratoires 
  []
 
 
-Overfull \hbox (23.06161pt too wide) in paragraph at lines 197--197
+Overfull \hbox (23.06161pt too wide) in paragraph at lines 229--229
 []\T1/cmr/bx/n/12 Test de pearson sur les corrélations du logarithme des variables réspiratoires 
  []
 
-[7] [8] (./rapport.aux)
+[8] [9] (./rapport.aux)
 Package rerunfilecheck Info: File `rapport.out' has not changed.
 (rerunfilecheck)             Checksum: 1DACC973EE459A1B533047CF32E9CC11;4867.
  ) 
 Here is how much of TeX's memory you used:
- 13322 strings out of 480247
- 217067 string characters out of 5896150
- 534522 words of memory out of 5000000
- 31039 multiletter control sequences out of 15000+600000
+ 13353 strings out of 480247
+ 217955 string characters out of 5896150
+ 534974 words of memory out of 5000000
+ 31064 multiletter control sequences out of 15000+600000
  483073 words of font info for 56 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  60i,11n,63p,807b,501s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -565,10 +581,10 @@ pdfTeX warning (dest): name{Hfootnote.2} has been referenced but does not exist,
 pdfTeX warning (dest): name{Hfootnote.1} has been referenced but does not exist, replaced by a fixed one
 
 {/usr/share/texmf/fonts/enc/dvips/cm-super/cm-super-t1.enc}</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfbx1440.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfcc1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0700.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm0900.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1000.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfrm1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti0800.pfb></usr/share/texmf/fonts/type1/public/cm-super/sfti1200.pfb></usr/share/texmf/fonts/type1/public/cm-super/sftt0800.pfb>
-Output written on rapport.pdf (9 pages, 733749 bytes).
+Output written on rapport.pdf (10 pages, 854955 bytes).
 PDF statistics:
- 294 PDF objects out of 1000 (max. 8388607)
- 223 compressed objects within 3 object streams
- 40 named destinations out of 1000 (max. 500000)
- 164 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 307 PDF objects out of 1000 (max. 8388607)
+ 232 compressed objects within 3 object streams
+ 43 named destinations out of 1000 (max. 500000)
+ 179 words of extra memory for PDF output out of 10000 (max. 10000000)
 

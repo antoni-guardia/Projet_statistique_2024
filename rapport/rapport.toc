@@ -9,9 +9,9 @@
 \contentsline {subsubsection}{\numberline {2.2.2}Relations logarithmiques entre les variables respiratoires}{4}{subsubsection.2.2.2}%
 \contentsline {subsection}{\numberline {2.3}Simplification des variables respiratoires}{5}{subsection.2.3}%
 \contentsline {subsubsection}{\numberline {2.3.1}Réduction des dimensions}{5}{subsubsection.2.3.1}%
-\contentsline {section}{\numberline {3}Imputation des variables manquantes}{6}{section.3}%
-\contentsline {section}{\numberline {A}Annexe: compléments de l'analyse sur les variables respiratoires}{7}{appendix.A}%
-\contentsline {subsection}{\numberline {A.1}Test de pearson sur les corrélations des variables réspiratoires}{7}{subsection.A.1}%
-\contentsline {subsection}{\numberline {A.2}Test de pearson sur les corrélations du logarithme des variables réspiratoires}{7}{subsection.A.2}%
-\contentsline {subsection}{\numberline {A.3}Résultats régression linéaire entre les variables respiratoires et leur logarithme}{7}{subsection.A.3}%
-\contentsline {subsection}{\numberline {A.4}Résultats classification}{7}{subsection.A.4}%
+\contentsline {section}{\numberline {3}Imputation des variables manquantes}{7}{section.3}%
+\contentsline {section}{\numberline {A}Annexe: compléments de l'analyse sur les variables respiratoires}{8}{appendix.A}%
+\contentsline {subsection}{\numberline {A.1}Test de pearson sur les corrélations des variables réspiratoires}{8}{subsection.A.1}%
+\contentsline {subsection}{\numberline {A.2}Test de pearson sur les corrélations du logarithme des variables réspiratoires}{8}{subsection.A.2}%
+\contentsline {subsection}{\numberline {A.3}Résultats régression linéaire entre les variables respiratoires et leur logarithme}{8}{subsection.A.3}%
+\contentsline {subsection}{\numberline {A.4}Résultats classification}{8}{subsection.A.4}%

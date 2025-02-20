@@ -169,6 +169,38 @@ On fait le choix arbitraire de réduire les variables en deux dimensions avec UM
 
 \newpage
 
+\begin{figure}[htbp]
+    \centering
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img_var_resp/umap_class_cha.png}
+        \caption{Répartition des élevages dans le plan UMAP par cluster}\label{fig:umap_dist_clust}
+    \end{subfigure}
+    \hspace{0.1cm}
+    \begin{subfigure}[b]{0.49\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{img_var_resp/dendo_cha.png}
+        \caption{Dendogramme}\label{fig:dendo_umap}
+    \end{subfigure}
+    \caption{Résultats UMAP et CHA}\label{fig:etu_umap}
+\end{figure}
+
+On à fait le choix de garder trois clusters suite au résultats du dendogramme (\ref{fig:dendo_umap}). Passons à l'interpretation des clusters:
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=0.8\textwidth]{img_var_resp/rep_cluster_var_orig.png}
+    \caption{Répartition des clusters par variable respiratoire}\label{fig:rep_cluster_respi}
+\end{figure}
+On constate à travers (\ref{fig:rep_cluster_respi}) la caractérisation suivante des clusters:
+\begin{itemize}
+    \item Cluster orange: Contient majoritairement les individus malades en post-sevrage.
+    \item Cluster vert: Contient les individus malades en engraissement, bien que cet effet soit moins marqué.
+    \item Cluster bleu: Représente les individus en bonne santé.
+\end{itemize}
+Qu'on nomera dans la suite respectivement: malades post-sevrage, malades-engraissement et sains. Pour une justification plus rigureuse, cf. (\ref{annexe:clusters})
+\newpage
+
 \section{Imputation des variables manquantes}
 
 \newpage
@@ -217,7 +249,7 @@ TODO
 \subsection{Résultats régression linéaire entre les variables respiratoires et leur logarithme}\label{annexe:reg_lin_log}
 TODO GLS with log transform 
 
-\subsection{Résultats classification}
+\subsection{Résultats classification}\label{annexe:clusters}
 
 \begin{table}[ht]
     \centering

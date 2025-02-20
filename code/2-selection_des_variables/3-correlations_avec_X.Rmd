@@ -204,7 +204,8 @@ heatmap_with_border <- function(mat, titre="", threshold = 0.05, margin = c(14, 
 heatmap_with_border(p_val_mat, "Matrice des p-valeurs", threshold = 0.05)
 ```
 
-Regardons comment chaque variable est plus ou moins corrélé au reste des variables, pour cela, créons le colonne du nombre de variables corrélés avec une p-valeur de 5%.
+### Les cases rouges sont celles où la p-valeur est inferieure à 0.05
+Regardons dans quelle mesure chaque variable est plus ou moins corrélée au reste des variables. Pour cela, créons une colonne indiquant le nombre de variables corrélées avec une p-valeur de 5 %.
 ```{r, eval=T, include=F}
 # On regarde qu'on a bien les bonnes variables dans le df des variables et corrélation avec y
 df_var$variable == colnames(p_val_mat)
@@ -219,7 +220,8 @@ for (i in 1:ncol(p_val_mat)){
 }
 summary(df_var)
 ```
-On code une fonction permettant d'obtenir les variables à garder de sorte qu'il n'y ait pas de coolinearité et minimize la p_valeur assoicé à la corrélation avec y.
+
+On code une fonction permettant d'obtenir les variables à conserver, de sorte qu'il n'y ait pas de colinéarité et que la p-valeur associée à la corrélation avec *y* soit minimisée.
 ```{r}
 # Fonction pour minimizer la somme des p-valeurs de sorte qu'il n'y ait aucune variable corrélée ie nb_var_corr == 0 pour toute variable
 minimize_p_value_sum <- function(df_var, bool_mat) {
@@ -262,8 +264,6 @@ minimize_p_value_sum <- function(df_var, bool_mat) {
   return(list(opt_df = best_solution, p_sum = best_p_sum))
 }
 
-
-length(unique(df_var$p_value)) 
 
 df_var_minimized <- minimize_p_value_sum(df_var, p_val_mat_bool)
 variables_gar <- df_var_minimized$opt_df

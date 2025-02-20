@@ -61,7 +61,7 @@ On observe que les modalités ENG_malade et PS_malade montrent des valeurs bien 
 ```{r,  warning=FALSE}
 
 meltData <- melt(donnees_na)
-boxplot(value ~ rep(na.omit(donnees$y), 4) * X2, data = meltData,
+boxplot(value ~ rep(na.omit(donnees$y), 4) * variable, data = meltData,
         horizontal =  TRUE,           
         outline = FALSE,  
         col = colors,  

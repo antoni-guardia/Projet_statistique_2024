@@ -1,8 +1,8 @@
 # Fdb version 3
-["pdflatex"] 1739897613 "/home/rogerbernat/Documents/Projet_statistique_2024/rapport/rapport.tex" "rapport.pdf" "rapport" 1739897615
+["pdflatex"] 1739905502 "/home/rogerbernat/Documents/Projet_statistique_2024/rapport/rapport.tex" "rapport.pdf" "rapport" 1739905504
   "/etc/texmf/web2c/texmf.cnf" 1734554693 475 c0e671620eb5563b2130f56340a5fde8 ""
   "/home/rogerbernat/.texlive2021/texmf-var/web2c/pdftex/pdflatex.fmt" 1734028953 1405652 f31ee0d05f5522431eb14527e5c9488a ""
-  "/home/rogerbernat/Documents/Projet_statistique_2024/rapport/rapport.tex" 1739897611 15050 c7c0800a40268c6ff5a0ad176a988b33 ""
+  "/home/rogerbernat/Documents/Projet_statistique_2024/rapport/rapport.tex" 1739905499 16598 95977f6cceb6495dfe51e8734f366776 ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1000.tfm" 1136768653 3584 2d666ecf6d466d8b007246bc2f94d9da ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/jknappen/ec/ecbx1200.tfm" 1136768653 3584 402da0b29eafbad07963b1224b222f18 ""
@@ -127,14 +127,17 @@
   "images_titre/ensai_logo.png" 1739785573 185043 8539c78706d7085062dc9620c2e1d64f ""
   "img_var_resp/corrplot_corr_lin.png" 1739872111 44914 7ca4153d7d4e3ea8ccf4e0b91b81e8d7 ""
   "img_var_resp/corrplot_corr_log.png" 1739878141 49874 0b689e12dddf18c698e0805e8f939f1e ""
+  "img_var_resp/dendo_cha.png" 1739895336 39673 c49bdf325b1087fe266c4f9b5175b548 ""
   "img_var_resp/dens_var_resp.png" 1739869188 17730 a44d33eb39fc9a1745ae9c07b4fb26d8 ""
   "img_var_resp/points_corr_lin.png" 1739871484 32401 b7110cc0004278100e5e1a843aee6707 ""
   "img_var_resp/points_corr_log.png" 1739877650 43145 15ec19f6b252dd7ecee07e9a98b9d5a5 ""
+  "img_var_resp/rep_cluster_var_orig.png" 1739896420 29398 6658d36f577bdf3b6615254c34001715 ""
   "img_var_resp/rep_var_resp.png" 1739819503 32017 91b1195c63b2e30cb88df9521c4708d0 ""
-  "rapport.aux" 1739897614 6803 82327db57ba84992f0c1ec556c71b81d "pdflatex"
-  "rapport.out" 1739897614 4867 1dacc973ee459a1b533047cf32e9cc11 "pdflatex"
-  "rapport.tex" 1739897611 15050 c7c0800a40268c6ff5a0ad176a988b33 ""
-  "rapport.toc" 1739897614 1831 facf1d3a7cebb073bf7f896a194579de "pdflatex"
+  "img_var_resp/umap_class_cha.png" 1739895325 48011 9ca3655fbb5df465c23e786ab166b0d7 ""
+  "rapport.aux" 1739905504 7823 d6d73d3b80b040bf5dd01e379d428a74 "pdflatex"
+  "rapport.out" 1739905504 4867 1dacc973ee459a1b533047cf32e9cc11 "pdflatex"
+  "rapport.tex" 1739905499 16598 95977f6cceb6495dfe51e8734f366776 ""
+  "rapport.toc" 1739905504 1831 f8ffbe5498a9c27a075fb651f807189c "pdflatex"
   (generated)
   "rapport.aux"
   "rapport.log"

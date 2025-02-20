@@ -1,0 +1,212 @@
+```{r, include=FALSE}
+# Nettoyage de l'environnement
+rm(list = ls())
+
+# Chargement des librairies
+library(dplyr)
+library(corrplot)
+library(Exact) 
+library(ggplot2)
+library(DescTools)
+
+# install.packages("Exact")
+# install.packages("DescTools")
+
+
+# Chargement du fichier .rds
+load("nomenclature_y_supp_anciennes.Rdata")
+data <- donnees_sans_ancien_y[, -1]
+nom_colonnes <- colnames(data)
+```
+
+
+## Étude univariée du lien entre Y et les variables X
+On commence par définir une fonction qui réalise un test du chi^2 pour les variables qualitatives dont la modalité ayant le plus petit effectif est supérieure à 5. Sinon, on effectue un G-test. Pour les variables numériques, on applique un test ANOVA.
+```{r}
+etude_univariee <- function(Y, data) {
+  if (!(Y %in% colnames(data))) {
+    stop("La variable Y n'est pas présente dans le jeu de données.")
+  }
+  
+  variables_selectionnees <- list()
+  
+  # Initialisation des compteurs pour chaque type de test
+  compteur_anova <- 0
+  compteur_gtest_yates <- 0
+  compteur_gtest_williams <- 0
+  compteur_gtest_sans_correction <- 0
+  pvalue_na <- 0
+  
+  for (var in colnames(data)) {
+    if (var == Y) next 
+    
+    if (is.numeric(data[[var]])) {
+      # Test ANOVA pour les variables numériques
+      p_value <- tryCatch({
+        summary(aov(data[[var]] ~ data[[Y]]))[[1]]$`Pr(>F)`[1]
+      }, error = function(e) NA)
+
+      compteur_anova <- compteur_anova + 1
+      
+    } else if (is.factor(data[[var]])) {
+      
+      # Calcul des effectifs attendus
+      tab_contingence <- table(data[[var]], data[[Y]])
+      total_global <- sum(tab_contingence)
+      tot_lignes <- rowSums(tab_contingence) # renvoie un vecteur avec les totaux de lignes
+      tot_colonnes <- colSums(tab_contingence)
+      effectifs_attendus <- outer(tot_lignes, tot_colonnes, FUN = "*") / total_global
+
+      if (any(effectifs_attendus < 5) & all(dim(tab_contingence) == 2)) {
+        # Correction de Yates pour un tableau 2x2 avec effectifs faibles
+        p_value <- tryCatch({
+          GTest(tab_contingence, correct = "yates")$p.value
+        }, error = function(e) NA)
+        
+        # Incrémentation du compteur GTest avec Yates
+        compteur_gtest_yates <- compteur_gtest_yates + 1
+        
+      } else if (any(effectifs_attendus < 5) & any(dim(tab_contingence) > 2)) {
+        # Correction de Williams pour un tableau > 2x2 avec effectifs faibles
+        p_value <- tryCatch({
+          GTest(tab_contingence, correct = "williams")$p.value
+        }, error = function(e) NA)
+        
+        # Incrémentation du compteur GTest avec Williams
+        compteur_gtest_williams <- compteur_gtest_williams + 1
+        
+      } else {
+        # Test G sans correction pour les autres cas
+        p_value <- tryCatch({
+          GTest(tab_contingence)$p.value
+        }, error = function(e) NA)
+        
+        # Incrémentation du compteur GTest sans correction
+        compteur_gtest_sans_correction <- compteur_gtest_sans_correction + 1
+      }
+      
+    } else {
+      next
+    }
+    
+    # Ajouter la p-value à la liste des variables sélectionnées
+    if (!is.na(p_value)) {
+      variables_selectionnees[[var]] <- p_value
+    }
+    else{
+      pvalue_na <- pvalue_na + 1
+    }
+  }
+  
+  # Affichage des compteurs de chaque test
+  cat("ANOVA effectués:", compteur_anova, "\n")
+  cat("GTest avec correction Yates effectués:", compteur_gtest_yates, "\n")
+  cat("GTest avec correction Williams effectués:", compteur_gtest_williams, "\n")
+  cat("GTest sans correction effectués:", compteur_gtest_sans_correction, "\n")
+  cat("Gtest donnant p-value NA", pvalue_na, "\n")
+  return(variables_selectionnees)
+}
+```
+
+## Sélection des variables explicatives
+```{r, warning=FALSE}
+resultats <- etude_univariee(Y = colnames(data)[510], data = data) # Pour chaque X on calcul la p-value avec y
+
+p_values <- as.numeric(unlist(resultats))
+p_select <- 0.1
+
+density_values <- density(p_values)
+
+ggplot(data.frame(p_values), aes(x = p_values)) +
+  geom_density(fill = "blue", alpha = 0.5) +
+  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1) +
+  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
+  labs(title = "Densité des P-valeurs",
+       x = "p-valeur",
+       y = "Densité") +
+  theme_minimal()
+
+ggplot(data.frame(p_values), aes(x = p_values)) +
+  stat_ecdf(geom = "step", color = "blue", size = 1) +
+  geom_vline(xintercept = p_select, color = "red", linetype = "dashed", size = 1)  +
+  # geom_vline(xintercept = local_max_x, color = "orange", linetype = "dashed", size = 1) +
+  labs(title = "Densité cumulée des p-valeurs",
+       x = "P-Valeur",
+       y = "Probabilité cumulée") +
+  theme_minimal()
+length(p_values[p_values <= p_select]) 
+selected_vars <- names(resultats)[p_values <= p_select]
+bdd_apres_pvalue_10 <- donnees_sans_ancien_y[, c(selected_vars, "y")]
+save(bdd_apres_pvalue_10, file= "supp_p_val_10.Rdata")
+
+```
+
+En gardant une p-valeur de 0,10, nous sélectionnons 61 variables. Nous faisons ce choix de p-valeur afin de limiter à 10 % les chances de nous tromper lors de la considération ou non d’une variable.
+
+Cependant, comme nous avons utilisé la même p-valeur pour des variables de nature différente, vérifions si les variables sélectionnées respectent les proportions initiales de typage.
+
+```{r}
+variable_names <- names(resultats)
+
+# Transformation en data frame
+p_values_df <- data.frame(variable = variable_names, p_value = p_values)
+
+# On met les variables en ordre suivant la p_valeur
+sorted_p_values_df <- p_values_df[p_values_df$p_value <= p_select, ]
+
+# On garde les indices des 100 avec la plus petite p valeur
+p_100_data <- data[, c(sorted_p_values_df$variable, "y")]
+
+column_types <- sapply(data, class)
+
+comparation_typage_dataframe <- function(df1, df2) {
+  # On crée une variable de type 
+  types_df1 <- sapply(df1, class)
+  types_df2 <- sapply(df2, class)
+  
+  # On calcule la proportion des types
+  type_proportions_df1 <- table(types_df1) / length(types_df1)
+  type_proportions_df2 <- table(types_df2) / length(types_df2)
+  
+  # On regarde qu'il n'y ait pas une table avec un type de moins
+  all_types <- unique(c(names(type_proportions_df1), names(type_proportions_df2)))
+  
+  # On crée le dataframe de comparaison
+  comparison_df <- data.frame(
+    DataType = all_types,
+    Proportion_df1 = sapply(all_types, function(x) type_proportions_df1[x]),
+    Proportion_df2 = sapply(all_types, function(x) type_proportions_df2[x])
+  )
+  
+  # On remplace les valeurs manquantes par 0
+  comparison_df$Proportion_df1[is.na(comparison_df$Proportion_df1)] <- 0
+  comparison_df$Proportion_df2[is.na(comparison_df$Proportion_df2)] <- 0
+  
+  return(comparison_df)
+}
+comparison_df <- comparation_typage_dataframe(data, p_100_data)
+comparison_df
+```
+
+On observe des différences notables de répartition. Vérifions ces observations à l’aide du test du chi^2 :
+
+```{r}
+var_1 <- comparison_df$Proportion_df1
+var_2 <- comparison_df$Proportion_df2
+
+tab_contingence <- matrix(c(var_1, var_2), 
+                            nrow = 2, 
+                            byrow = TRUE)
+chisq.test(tab_contingence*100)
+length(p_100_data)
+head(p_100_data)
+```
+
+On a une p-valeur de 0,04. Donc, les variables ne sont pas indépendantes. Cependant, aurait-il été plus judicieux de choisir les variables en respectant les proportions initiales de la base de données ?
+
+```{r, include=FALSE, eval=T}
+length(p_100_data)
+p_100_data <- cbind(donnees$CODE_ELEVAGE, p_100_data)
+colnames(p_100_data)[1] <- "CODE_ELEVAGE"
+saveRDS(p_100_data, "supp_p_val_10.Rdata")
+```
