@@ -19,9 +19,10 @@ library(knitr)
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
 
 # Chargement du fichier .rds
-data <- readRDS("supp_redondanceet+_tutrice.Rdata", "rb")
-df_var <- readRDS("df_var_p-val.Rdata", "rb")
-df_var <- df_var[ df_var$variable %in% colnames(data),]
+data <- readRDS("supp_redondanceet+tutrice_new.Rdata", "rb")
+df_var <- readRDS("df_var_p_val.Rdata", "rb")
+df_var <- df_var[ df_var$var %in% colnames(data),]
+data.explicatives <- data[-c(1,23)]
 
 ```
 
@@ -32,12 +33,12 @@ Une option est disponible pour modifier la fonction en bas. Elle permet d'affich
 matrice_p_valeur <- function(data) {
   # Initialiser une matrice vide pour stocker les p-values
   n <- ncol(data)
-  p_value_matrix <- matrix(NA, nrow = n, ncol = n, dimnames = list(colnames(data), colnames(data)))
+  p_value_matrix <- matrix(NA, nrow = n, ncol = n, 
+                           dimnames = list(colnames(data), colnames(data)))
   
   # Boucle sur toutes les paires de variables
   for (i in 1:n) {
     var1 <- colnames(data)[i]
-    
     for (j in 1:n) {
       var2 <- colnames(data)[j]
       
@@ -47,7 +48,7 @@ matrice_p_valeur <- function(data) {
         next
       }
       
-      # Calculer la p-value selon le type des variables
+      # Calcul de la p-value selon le type des variables
       if (is.numeric(data[[var1]]) && is.numeric(data[[var2]])) {
         # Test de corrélation de Spearman pour deux variables numériques
         p_value <- tryCatch({
@@ -55,13 +56,25 @@ matrice_p_valeur <- function(data) {
         }, error = function(e) NA)
         
       } else if (is.factor(data[[var1]]) && is.factor(data[[var2]])) {
-        # Test G-test pour deux variables catégorielles
+        # Test G-test pour deux variables catégorielles avec gestion des effectifs faibles
         tab_contingence <- table(data[[var1]], data[[var2]])
-        if (any(tab_contingence < 5)) {
+        total_global <- sum(tab_contingence)
+        tot_lignes <- rowSums(tab_contingence)
+        tot_colonnes <- colSums(tab_contingence)
+        effectifs_attendus <- outer(tot_lignes, tot_colonnes, FUN = "*") / total_global
+        
+        if (any(effectifs_attendus < 5) && all(dim(tab_contingence) == 2)) {
+          # Correction de Yates pour un tableau 2x2 avec effectifs faibles
           p_value <- tryCatch({
-            GTest(tab_contingence)$p.value
+            GTest(tab_contingence, correct = "yates")$p.value
+          }, error = function(e) NA)
+        } else if (any(effectifs_attendus < 5) && any(dim(tab_contingence) > 2)) {
+          # Correction de Williams pour un tableau > 2x2 avec effectifs faibles
+          p_value <- tryCatch({
+            GTest(tab_contingence, correct = "williams")$p.value
           }, error = function(e) NA)
         } else {
+          # Test G sans correction pour les autres cas
           p_value <- tryCatch({
             GTest(tab_contingence)$p.value
           }, error = function(e) NA)
@@ -84,11 +97,6 @@ matrice_p_valeur <- function(data) {
         p_value <- NA
       }
       
-      # Option pour afficher 1 à toutes les p_value > 0.10 :
-      #if (!is.na(p_value) & p_value > 0.10){
-      #  p_value <- 1
-      #}
-      
       # Stocker la p-value dans la matrice
       p_value_matrix[i, j] <- p_value
     }
@@ -97,12 +105,12 @@ matrice_p_valeur <- function(data) {
   return(p_value_matrix)
 }
 
+
 ```
 
 On utilise donc cette fonction sur notre jeu de données (en prenant le soin d'enlever CODE_ELEVAGE et y) et on peut observer les résultats.
 ```{r}
-
-p_val_mat <- as.matrix(matrice_p_valeur(data[-c(1,26)]))
+p_val_mat <- as.matrix(matrice_p_valeur(data.explicatives))
 visual_mat <- formatC(p_val_mat, format = "e", digits = 2)
 
 kable(visual_mat, format = "markdown")
@@ -208,7 +216,7 @@ heatmap_with_border(p_val_mat, "Matrice des p-valeurs", threshold = 0.05)
 Regardons dans quelle mesure chaque variable est plus ou moins corrélée au reste des variables. Pour cela, créons une colonne indiquant le nombre de variables corrélées avec une p-valeur de 5 %.
 ```{r, eval=T, include=F}
 # On regarde qu'on a bien les bonnes variables dans le df des variables et corrélation avec y
-df_var$variable == colnames(p_val_mat)
+all(df_var$var == colnames(p_val_mat))
 ```
 ```{r}
 # Création de a matrice indicant si deux variables sont correlées:
@@ -263,10 +271,13 @@ minimize_p_value_sum <- function(df_var, bool_mat) {
   
   return(list(opt_df = best_solution, p_sum = best_p_sum))
 }
-
-
+colnames(df_var) <- c("variable", "p_value", "nb_var_corr" )
+variables_origi <- df_var$variable
 df_var_minimized <- minimize_p_value_sum(df_var, p_val_mat_bool)
 variables_gar <- df_var_minimized$opt_df
+# Vraiables à supprimmer
+setdiff(variables_origi, variables_gar$variable)
+# variables à garder
 variables_gar$variable
 ```
-On garde alors un total de 12 variables.
+On garde alors un total de 14 variables.

@@ -12,10 +12,11 @@ library(ggplot2)
 #library(DescTools)
 
 setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+load("supp_p_val_10_clem.Rdata")
+data <- bdd_apres_pvalue_10
+data2 <- readRDS("supp_p_val_10.Rdata")
+redondance <- readxl::read_xlsx("dict_new_df_Sujet22_SelectionVar.xlsx") # le df contenant les variables à supprimer
 
-# Chargement des fichiers
-data <- readRDS("suppression_doublons.Rdata", "rb") # la base de données précédente
-redondance <- readxl::read_xlsx("df_var_p_val_Choix_Var_Supp_sujet22.xlsx") # le df contenant les variables à supprimer
 ```
 
 ## Suppression des variables redondantes et plus sur conseil de la tutrice
@@ -24,17 +25,21 @@ summary(redondance)
 
 # Récupérons les variables à garder dans le dataframe à l'exception de CODE_ELEVAGE et y 
 variables_keep <- redondance %>% filter(`A_supprimer (0:non; 1: oui)`=="0")
+df_var_p_val <- data.frame(cbind(variables_keep$variables, as.numeric(variables_keep$"P-valeur")))
+names(df_var_p_val) <- c("var", "p_val")
+df_var_p_val$p_val <- as.numeric(df_var_p_val$p_val)
+saveRDS(df_var_p_val, "df_var_p_val.Rdata")
 summary(variables_keep)
 
 # Gardons uniquement ces variables dans notre future base de données
-data_new <- data %>% select(all_of(variables_keep$variable))
+data_new <- data %>% select(all_of(variables_keep$variables))
 
 # Rajoutons à la main les variables CODE_ELEVAGE et y
-data_new <- cbind(data$CODE_ELEVAGE, data_new, data$y)
+data_new <- cbind(data2$CODE_ELEVAGE, data_new, data$y)
 colnames(data_new)[1] <- "CODE_ELEVAGE"
-colnames(data_new)[26] <- "y"
-length(data_new)
-
+colnames(data_new)[ncol(data_new)] <- "y"
+summary(data_new)
+colnames(data_new)
 # Enregistrons les données
-saveRDS(data_new, "supp_redondanceet+_tutrice.Rdata")
+saveRDS(data_new, "supp_redondanceet+tutrice_new.Rdata")
 ```
