@@ -1,0 +1,53 @@
+```{r, include=FALSE}
+# Imporation des données
+set.seed(123456)
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+data <- readRDS("suppression_85_NA.Rdata", "rb")
+donnees <- data[,c(2,3,4,5)]
+donnees.clean <- na.omit(donnees)
+names(donnees.clean) <- c("PS_tx", "PS_Eter", "ENG_Tx", "ENG_Eter")
+f = function(x) {
+    print(sd(x))
+    return (log(sd(x) * x + 1))
+}
+donnees.log <- apply(donnees.clean, 2, f )
+donnees.log
+colnames(donnees.log) <- c("log_PS_tx", "log_PS_Eter", "log_ENG_Tx", "log_ENG_Eter")
+donnees.lm <- cbind(donnees.clean, donnees.log)
+```
+Début régression: 
+```{r}
+library(nlme)
+library(MASS)
+
+pairs(donnees.log)
+
+plot(donnees.lm[,5], donnees.lm[,6])
+colnames(donnees.lm)
+
+res.gls <- gls(PS_Eter~ . -log_PS_Eter, donnees.lm, method = "ML")
+
+stepwise_model <- stepAIC(res.gls, direction = "both")
+summary(stepwise_model)
+final_model <- gls(formula(stepwise_model), data = donnees.lm, method = "REML")
+
+summary(final_model)
+```
+On obtient un modéle avec deux variables comme meilleue modèle suivant le critère AIC.
+```{R}
+# Fit the null model (intercept-only model)
+null_model <- gls(PS_Eter ~ 1, data = donnees.lm, method = "ML")
+
+# Extract residuals from the null model and your GLS model
+residuals_null <- residuals(null_model)
+residuals_gls <- residuals(res.gls)
+
+# Calculate the total variance (SST) and residual variance (SSE)
+SST <- var(residuals_null)  # Total variance
+SSE <- var(residuals_gls)   # Residual variance
+
+# Compute the proportion of variance explained
+explained_variance <- 1 - (SSE / SST)
+explained_variance
+```

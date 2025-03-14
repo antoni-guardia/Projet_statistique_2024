@@ -1,0 +1,26 @@
+```{r, include=F, eval=T}
+# install.packages("mbpls")
+rm(list = ls())
+
+library(kpls)
+
+setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+
+data.rf <- readRDS("data_post_etape_4_Forest.Rdata", "rb")
+data.mean <- readRDS("data_post_etape_4_Mean.Rdata", "rb")
+
+data.rf.clean <- data.rf[,-c(1,23)]
+data.mean.clean <- data.mean[,-c(1,23)]
+
+y.rf <- data.rf[,23]
+y.mean <- data.mean[,23]
+
+code_elevage <- data.rf[1]
+```
+
+```{r, include=T, eval=T}
+pls_model.rf <- mbpls(y ~ . -y -code_elevage, data = data.rf, validation = "CV")
+
+
+
+```
