@@ -84,21 +84,24 @@ plot(pca_data$Dim.1, pca_data$Dim.2, col = pca_data$Cluster, pch = 19,
 ```{r, warning=FALSE}
 meltData <- melt(scaled_data_na)
 colors <- brewer.pal(3, "Set2")
+png("acp_rep_cluster_var_orig.png", height = 800, width = 1450)
+par(mar=c(6.5,12.5,3,3), lwd=3, mgp = c(5, 1, 0))
 
-boxplot(value ~ rep(clusters1, each = 4) * X2, data = meltData,
+boxplot(value ~ rep(pca_data$Cluster, each = 4) * X2, data = meltData,
         horizontal =  TRUE,           
         outline = FALSE,  
         col = colors,  
         frame = FALSE,
         at = c(1,2,3,5,6,7,9,10,11,13,14,15),
-        main = "Répartition des variables à expliquée par cluster acp",
+        main = "",
         xlab = "Valeur",
         ylab = "",
         las = 2,
-        cex.axis = 0.72,
+        cex.axis = 2.5,
+        cex.lab=3,
         names=c("", "PS_TX", " ", " ", "PS_ETER", " ", " ", "ENG_TX", " ", " ", "ENG_ETER", " " )
         )
-
+dev.off()
 ```
 
 On observe le même phénomène que pour la première ACP, un petit group d'individus contribue fortement à la création des axes tandis que la contribution du reste des indivus reste relativement faible. De plus, les classes ne sont pas interprétables.

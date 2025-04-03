@@ -16,14 +16,18 @@ library(lsr)
 library(RColorBrewer)
 library(knitr)
 
-setwd("/home/rogerbernat/Documents/Projet_statistique_2024")
+setwd("/home/rogerbernat/Documents/ENSAI/ensai 2024-25/Projet_statistique_2024")
 
 # Chargement du fichier .rds
-data <- readRDS("supp_redondanceet+tutrice_new.Rdata", "rb")
+load("supp_p_val_10_clem.Rdata")
+data <- bdd_apres_pvalue_10
+names(data)
+length(data)
 df_var <- readRDS("df_var_p_val.Rdata", "rb")
+df_var
 df_var <- df_var[ df_var$var %in% colnames(data),]
-data.explicatives <- data[-c(1,23)]
-
+data.explicatives <- data[-c(64)]
+names(data.explicatives)
 ```
 
 ## Étude des liens entre les variables X deux à deux
@@ -110,7 +114,9 @@ matrice_p_valeur <- function(data) {
 
 On utilise donc cette fonction sur notre jeu de données (en prenant le soin d'enlever CODE_ELEVAGE et y) et on peut observer les résultats.
 ```{r}
-p_val_mat <- as.matrix(matrice_p_valeur(data.explicatives))
+names(data.explicatives)
+p_val_mat <- as.matrix(matrice_p_valeur(na.omit(data.explicatives)))
+p_val_mat
 visual_mat <- formatC(p_val_mat, format = "e", digits = 2)
 
 kable(visual_mat, format = "markdown")
@@ -159,7 +165,6 @@ heatmap_with_border <- function(mat, titre="", threshold = 0.05, margin = c(14, 
       ybottom <- nr - i
       xright <- j
       ytop   <- nr - i + 1
-      
       if (value <= threshold) {
         # Draw the cell with the assigned fill color, no border.
         rect(xleft, ybottom, xright, ytop, col = fill_col, border = NA)
@@ -204,12 +209,18 @@ heatmap_with_border <- function(mat, titre="", threshold = 0.05, margin = c(14, 
   ## Add gradient color bar at the bottom
   par(mar = c(3, 4, 1, 2))  # Adjust margins for the gradient
   color_levels <- seq(min_val, max_val, length.out = 100)
-  
-  image(1:100, 1, as.matrix(1:100), col = colors, axes = FALSE, xlab = "", ylab = "")
-  axis(1, at = seq(1, 100, length.out = 5), labels = round(seq(min_val, max_val, length.out = 5), 2))
-}
 
-heatmap_with_border(p_val_mat, "Matrice des p-valeurs", threshold = 0.05)
+  image(1:100, 1, as.matrix(1:100), col = colors, axes = FALSE, xlab = "", ylab = "")
+
+  rect(0.45, -0.1, 0.55, -0.15, col = "red", border = NA)
+  text(0.5, -0.125, "p < 0.05", col = "white", cex = 0.8)
+  
+  axis(1, at = seq(1, 100, length.out = 5), labels = round(seq(min_val, max_val, length.out = 5), 2), lwd = 0.05)
+}
+png("matrice_correlations_63.png", height=1200, width=1200)
+heatmap_with_border(p_val_mat, "", threshold = 0.05)
+dev.off()
+
 ```
 
 ### Les cases rouges sont celles où la p-valeur est inferieure à 0.05
