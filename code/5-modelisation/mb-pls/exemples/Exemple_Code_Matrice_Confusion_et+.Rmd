@@ -1,0 +1,157 @@
+# Matrice de confusion pour le modèle final
+```{r}
+# On sélectionne les coefficients de regression calculés à partir du nombre de dimensions optimales
+beta =  cbind(coef_obs1, coef_obs2, coef_obs3)
+#on prédit les 3 Y
+
+Y.pred   <- as.matrix(res.mbpls2$tabX) %*% as.matrix(beta)
+
+colnames(Y.pred) <- rownames(data[1])
+
+# Prendre la classe d'appartenance en sélectionnant la colonne avec la valeur maximale pour chaque ligne
+class.pred <- apply(Y.pred, 1, which.max)
+
+
+
+class.names <- c("1", "2", "3")
+class.pred <- class.names[class.pred]
+
+# Afficher les prédictions de classes
+print(class.pred)
+```
+
+```{r}
+true.classes= Blocs_Y_76X01_X07$y3_SP_NE
+# Calculer la matrice de confusion
+confusion.matrix <- table(True = true.classes, Predicted = class.pred)
+
+# Afficher la matrice de confusion
+print(confusion.matrix)
+```
+
+```{r}
+# Facultatif: utiliser le package 'caret' pour obtenir des statistiques supplémentaires
+# install.packages("caret")
+library(caret)
+confusionMatrix(confusion.matrix)
+```
+# Matrice de confusion normalisée
+
+```{r}
+# Calculer la matrice de confusion
+confusion.matrix <- table(True = true.classes, Predicted = class.pred)
+
+# Matrice de confusion normalisée
+confusion.matrix_norm <- prop.table(confusion.matrix, 1)
+
+# Afficher la matrice de confusion normalisée
+print(confusion.matrix_norm)
+```
+
+```{r}
+# Visualiser la matrice de confusion normalisée
+library(ggplot2)
+library(reshape2)
+
+confusion_df <- melt(confusion.matrix_norm)
+colnames(confusion_df) <- c("True", "Predicted", "Value")
+
+ggplot(data = confusion_df, aes(x = True, y = Predicted, fill = Value)) +
+  geom_tile() +
+  geom_text(aes(label = sprintf("%.2f", Value)), color = "white") +
+  scale_fill_gradient(low = "white", high = "red") +
+  theme_minimal() +
+  labs(title = "Matrice de Confusion Normalisée", x = "Classe Réelle", y = "Classe Prédite")
+
+```
+# Courbe de ROC multiclasse
+
+```{r}
+library(pROC)
+# Convertir les true.classes en format factor
+true.classes <- factor(true.classes, levels = c("1", "2", "3"))
+
+# Créer les objets de prédiction pour chaque classe
+roc1 <- roc(true.classes, as.numeric(class.pred == "1"), plot = TRUE, col = "red", main = "Courbes ROC Multiclasse")
+roc2 <- roc(true.classes, as.numeric(class.pred == "2"), plot = TRUE, col = "green", add = TRUE)
+roc3 <- roc(true.classes, as.numeric(class.pred == "3"), plot = TRUE, col = "blue", add = TRUE)
+legend("bottomright", legend = c("Classe 1", "Classe 2", "Classe 3"), col = c("red", "green", "blue"), lwd = 2)
+
+```
+# Précision et Sensibilité
+```{r}
+library(caret)
+
+# Utiliser la fonction confusionMatrix du package 'caret'
+conf_matrix <- confusionMatrix(factor(class.pred, levels = c("1", "2", "3")), factor(true.classes))
+
+# Récupérer les précisions et rappels par classe
+precision <- conf_matrix$byClass[,"Pos Pred Value"]
+recall <- conf_matrix$byClass[,"Sensitivity"]
+
+# Créer un dataframe pour la visualisation
+metrics_df <- data.frame(
+  Classe = c("Classe 1", "Classe 2", "Classe 3"),
+  Precision = precision,
+  sensitivity = recall
+)
+
+metrics_df
+
+# Visualiser la précision et le rappel par classe
+ggplot(metrics_df, aes(x = Classe)) +
+  geom_bar(aes(y = Precision, fill = "Precision"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = sensitivity, fill = "sensitivity"), stat = "identity", position = "dodge") +
+  scale_fill_manual(name = "Metric", values = c("Precision" = "darkred", "sensitivity" = "lightgreen")) +
+  theme_minimal() +
+  labs(title = "Précision et Sensibilité par Classe", y = "Valeur")
+```
+La précision est la proportion des prédictions positives correctes parmi toutes les prédictions positives faites par le modèle.
+
+La sensibiité est la proportion des prédictions positives correctes parmi toutes les instances positives réelles.
+
+Exemple : 
+Classe 1 
+*Précision* : 0.7037037
+
+Cela signifie que 70.37% des instances prédictes comme étant de la classe 1 sont effectivement de la classe 1. En d’autres termes, parmi toutes les prédictions pour la classe 1, environ 70% sont correctes et 30% sont incorrectes (faux positifs). 
+
+*Sensibilité (Rappel)* : 0.8260870
+
+Cela signifie que 82.61% des instances réellement de la classe 1 sont correctement identifiées par le modèle. En d’autres termes, le modèle a bien capturé environ 83% des instances de la classe 1, mais en a manqué environ 17% (faux négatifs).
+
+# autre option pour récupérer le taux d'individus bien classés - codage pour un autre fichier de données
+```{r}
+#classement
+
+matrice_tabX <- as.matrix(res.mbpls2$tabX)
+b <- data.frame(base_repro_BAT$CODE_ELEVAGE,
+                matrice_tabX %*% res.mbpls2$XYcoef$Y1[,3], matrice_tabX %*% res.mbpls2$XYcoef$Y2[,3],
+               matrice_tabX %*% res.mbpls2$XYcoef$Y3[,3], matrice_tabX %*% res.mbpls2$XYcoef$Y4[,3])
+names(b)[1] <- "CODE_ELEVAGE"
+
+b <- b %>%
+  rename(y1pred = matrice_tabX.....res.mbpls2.XYcoef.Y1...3.,
+          y2pred = matrice_tabX.....res.mbpls2.XYcoef.Y2...3.,
+          y3pred = matrice_tabX.....res.mbpls2.XYcoef.Y3...3.,
+          y4pred = matrice_tabX.....res.mbpls2.XYcoef.Y4...3.)
+
+b$max_value <- apply(b[, 2:5], 1, max)
+b$max_value <- ifelse(b$max_value %in% b[, 2], 1, 
+                      ifelse(b$max_value %in% b[,3], 2, 
+                             ifelse(b$max_value %in% b[,4], 3,
+                                    ifelse(b$max_value %in% b[,5], 4, 0))))
+
+niveau <- read_xlsx("C:/Users/leoni/Desktop/stage/Donnees/nvlles_data/niveaux/BDD NivBEA_SA_SP__Repro_final.xlsx")
+niveau$ncp5_NivRepro4cl <- as.factor(niveau$ncp5_NivRepro4cl)
+
+base_repro <- merge(base_repro, niveau, by = "CODE_ELEVAGE", all.x = TRUE) 
+rm(niveau)
+b <- merge(b, base_repro, by = "CODE_ELEVAGE", all = FALSE)
+b <- b[,c(1:6, 89)]
+
+#tx bon classement
+(sum(b$max_value == b$ncp5_NivRepro4cl)/nrow(b))*100
+
+```
+

@@ -1,0 +1,584 @@
+---
+title: "PIGAL - Analyse PLS multiblocs suivie d'une classification k-means des variables respiratoires"
+author: 
+    -name : "Christelle FABLET"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+  theme: "architect"
+  fig_width: 12
+  fig_height: 8
+highlight: github
+number_sections: TRUE
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{=html}
+<style type="text/css">
+  body{
+    font-size: 5pt;
+  }
+</style>
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Packages**
+
+```{r error=FALSE, message=FALSE, warning=FALSE, include=F, eval=T}
+# chargement des packages nécessaires pour la suite
+rm(list=ls())
+library(fastDummies)
+library(ade4)
+library(factoextra)
+library(cluster)
+library(knitr)
+library(table1)
+library(FactoMineR)
+library(dplyr)
+library(writexl)
+library(adegraphics)
+library(dbscan)
+library(mclust)
+library(ggplot2)
+library(gridExtra)
+```
+
+**Charger les données**
+
+```{r, echo = T, warning = F, message = F, eval = T, include = F}
+
+donnees <- readRDS("/home/rogerbernat/Documents/Projet_Stat_2025_modelisation/data_post_etape_4_Mean.Rdata")
+
+```
+
+## \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+#Analyse multiblocs - 21 variables X et une variable Y
+
+## \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+data.clean = fichier contenant 21 variables X et une variable Y.
+
+
+```{r, echo = T, warning = F, message = F, eval = T, include = F}
+set.seed(1234567)
+
+# suppression variable code elevage
+data.clean <- donnees[-1]
+rownames(data.clean) <- donnees$code_elevage
+noms.ligne <- donnees$code_elevage
+for(i in 1:length(data.clean)){
+  if(is.numeric(data.clean[i]))
+  data.clean[i] <- scale(data.clean[i])
+}
+```
+
+*Etape 1* 
+
+On réalise et CODE_ELEVAGEle découpage par les blocs en accord avec le fichier variables_Sujet_22_envoi.xlsx
+
+```{r, echo = T, warning = F, message = F}
+X01_Logement_Entretien <- data.clean[, c("X22x1_LOC_INF_rec", "X07x1_AN_CONST4_mean_3", "ENG_TROU", "T13_ENG_milieuDegrad.x")]
+X02_Alimentation <- data.clean[, c("T10_PS_EauDebi_3", "T10_PS_AlimPoNourrLongpPo", "X09x3_FAB_CROISS_reg_rec")]
+X03_Gestion_Maladies <- data.clean[, c("X18x2_ABBTX_PS", "X19x2_ABB_E")]
+X04_Biosecurite <- data.clean[, c("X12x2_MAT_PC", "X12x2_MAT1FRLAV_1", "T16_BS_TenueSpeciElev", "X13x2_QUAI_t")]
+X05_Facteurs_Infectieux <- data.clean[, c("A03_Pos10sVERS", "A03_PosSeroMyAs", "A03_TxPosSero22sTgReel", "A04_My10Mfloc", "A05_TxPos10sGRIPPEReel")]
+X06_Caracteristiques_Generales <- data.clean[, c("X06x1_gene_majo_1_rec", "X25x1_ElvAlterChoiPers", "LR_LRF")]
+```
+
+*Etape 2*
+
+Création des dummy (ie binaires) variables avec le package fastDummies. La variable prise en référence correspond à celle dont l'effectif de réponse est le plus élevé.
+
+```{r, echo = T, warning = F, message = F}
+
+data <- list(X01_Logement_Entretien, X02_Alimentation, X03_Gestion_Maladies, X04_Biosecurite, X05_Facteurs_Infectieux, X06_Caracteristiques_Generales)
+
+for(i in 1:length(data)){
+  df <- data[[i]]
+  for(var in names(df)){
+    if(is.factor(df[[var]])){
+      df <- dummy_cols(df, var, remove_selected_columns = TRUE, remove_most_frequent_dummy = TRUE)
+    }
+  }
+  data[[i]] <- df
+}
+```
+
+*Etape 3* 
+La variable Y est en 3 modalités donc elle est également recodée en dummy variables selon le code indiqué ci-dessous.
+Introduction de la variable Y codée en 3 dummy (ie transformation de Y en 3 variables binaires) variables :
+
+```{r, echo = T, warning = F, message = F}
+dummy_y <- data.frame(y = data.clean$y)
+
+# Create des 3 Y
+dummy_y$sain <- as.integer(dummy_y$y == "Sain")
+dummy_y$ps_malade <- as.integer(dummy_y$y == "PS_malade")
+dummy_y$eng_malade <- as.integer(dummy_y$y == "ENG_malade")
+
+#suppression de y, la variable Y initiale, qui a été récodée en 3 niveaux Y
+```
+
+*Etape 4* 
+
+Création d'un bloc pour la variable Y codée en dummy variables.
+
+```{r}
+bloc.Y <- dummy_y[,2:4]
+data[[7]] <- bloc.Y
+```
+
+*Etape 5* 
+
+Renommer les blocs:
+
+```{r, echo = T, warning = F, message = F}
+new_names <- c("X01_Logement_Entretien", "X02_Alimentation", "X03_Gestion_Maladies", "X04_Biosecurite", "X05_Facteurs_Infectieux", "X06_Caracteristiques_Generales", "Bloc_Y")
+names(data) <- new_names
+```
+
+*Etape 6* 
+
+**PASSAGE à l'analyse mbPLS**
+
+## Préparation des données
+
+```{r, echo = T, warning = F, message = F}
+Y <- data[[7]]
+
+row.names(Y)<-rownames(data[[1]])
+#renommer les lignes du nouveau Y par les numéros des data 1 à 7 car Y prend le code elevage (PIGAL/ELEV/01...) alors que les autres fichiers ont un numéro d'ordre (perte du code_elevage); sans cela le code d'après bloque #à voir si cette étape est nécessaire dans votre code selon la configuration de votre fichier.
+dudiY.ergo <- dudi.pca(Y, center = TRUE, scale = TRUE, scannf = FALSE)
+ktabX.ergo <- ktab.list.df(data[1:6])
+```
+
+## mbPLS
+
+```{r, echo = T, warning = F, message = F}
+res.mbpls2   <- mbpls(dudiY.ergo, ktabX.ergo, scale = T, option = "uniform", scannf = FALSE, nf = 10)
+res.plot     <- plot(res.mbpls2)
+
+res.2foldcv2 <- testdim(res.mbpls2, nrepet = 500)  # calcul long
+```
+
+## Choix du nombre de dimensions
+
+```{R}
+rmsec_values <- res.2foldcv2$statsRMSEc$Mean
+rmsec_values[is.nan(rmsec_values)] <- NA
+somme <- res.2foldcv2$statsRMSEv$Mean + res.2foldcv2$statsRMSEc$Mean
+# Définir les limites de l'axe Y pour inclure les deux courbes
+#ylim_range <- range(c(res.2foldcv2$statsRMSEv$Mean, rmsec_values, somme), na.rm = TRUE)
+par(mfrow = c(1, 3))
+# Tracer la courbe d'erreur de validation (rouge)
+plot(1:length(res.2foldcv2$statsRMSEv$Mean), res.2foldcv2$statsRMSEv$Mean, type = "b", pch = 16, col = "black",
+     xlab = "Nombre de dimensions", ylab = "Erreur",
+     main = "Erreur Validation",
+     cex.main=1.75,
+     cex.axis=1.7, cex.lab=1.5)
+
+# Ajouter la courbe d'erreur d'apprentissage (bleue)
+plot(1:length(rmsec_values), rmsec_values, type = "b", pch = 16, col = "black",
+     xlab = "Nombre de dimensions", ylab = "Erreur",
+     main = "Erreur Apprentissage",cex.main=1.75,
+     cex.axis=1.7, cex.lab=1.5)
+
+plot(1:length(somme), somme, type = "b", pch = 16, col = "black",
+     xlab = "Nombre de dimensions", ylab = "Erreur",
+     main = "Somme des erreurs", cex.main=1.75,
+     cex.axis=1.7, cex.lab=1.5)
+
+
+# Sélection dimensions
+match(min(na.omit(somme)), somme)
+```
+
+NB : les variables X sont centrées et réduites à ce niveau
+On décide alors de garder 4 dimensions.
+
+# Récupération des composantes de tous les axes pour réaliser une classification k-means à partir de ces composantes
+
+```{r, echo = T, warning = F, message = F}
+#pour les X
+recup_compos_X<-res.mbpls2$lX
+#pour les Y
+recup_compos_Y<-res.mbpls2$lY
+```
+
+## Complément sur la variance expliquée des axes : variance expliquée par bloc
+
+```{r, include=F, eval=T}
+red<-rgb(1,0,0,0.5)
+orange <- rgb(1, 0.5, 0, 0.5)  
+green <- rgb(0, 0.8, 0, 0.5)
+sum_res <- summary(res.mbpls2)
+```
+```{r}
+
+par(mfrow = c(2, 3))
+for(name in names(sum_res)[-1]){
+    var.cum <- sum_res[[name]][,2]
+    color <- ifelse(var.cum <= 25, red, ifelse(var.cum < 30, orange, green))
+    barplot(var.cum,
+            main=name,
+            col = color,
+            cex.main=1.25,
+            cex.axis=1.2,
+            ylim= c(0,87))
+}
+
+
+var.cum <- sum_res$YandX[,2]
+color <- ifelse(var.cum <= 25, red, ifelse(var.cum < 30, orange, green))
+
+par(mfrow = c(1, 2))
+barplot(var.cum,
+            main="Y",
+            col = color,
+            cex.main=1.25,
+            cex.axis=1.2,
+            ylim= c(0,100))
+var.cum <- sum_res$YandX[,4]
+color <- ifelse(var.cum <= 25, red, ifelse(var.cum < 30, orange, green))
+
+barplot(var.cum,
+            main="X",
+            col = color,
+            cex.main=1.25,
+            cex.axis=1.2,
+            ylim= c(0,100))
+
+```
+
+
+## Classification
+
+L’objectif de cette approche est de regarder si de l’hétérogénéité existe au sein des niveaux de Y et que cela s’explique par des pratiques associées qui sont différentes.
+
+### K-means
+
+```{r, include=F, eval=T}
+
+selection_dimensions <- function(res.mbpls, n_dim){
+  # composantes du bloc X
+  data_clust <- res.mbpls[, 1:n_dim]
+  data_clust.scaled <- scale(data_clust)
+  
+  # calculate gap statistic
+  gap_stat <- cluster::clusGap(data_clust.scaled,
+                               FUN = kmeans,
+                               nstart = 25,
+                               K.max = 12,
+                               B = 150)
+  
+  # Extract correct values from the gap statistic table
+  gap_data <- data.frame(
+    clusters = 1:nrow(gap_stat$Tab),
+    gap = gap_stat$Tab[, "gap"],
+    SE = gap_stat$Tab[, "SE.sim"]
+  )
+  
+  # Create custom plot
+  ggplot(gap_data, aes(x = clusters, y = gap)) +
+    geom_line(color = "black") +
+    geom_point(color = "black") +
+    geom_errorbar(
+      aes(ymin = gap - SE, ymax = gap + SE),
+      width = 0.2,
+      color = "black"
+    ) +
+    labs(
+      x = "Nombre de Clusters",
+      y = "Gap Statistique"
+    ) +
+    scale_x_continuous(breaks = 1:nrow(gap_data)) +
+    theme_linedraw() +
+    theme(
+      # Bigger axis titles
+      axis.title = element_text(size = 18),  # Default is 11
+      # Bigger axis labels
+      axis.text = element_text(size = 14),   # Default is 10
+      # Thicker axis lines
+      axis.line = element_line(linewidth = 0.8)  # Default is 0.5
+    )
+}
+
+```
+
+```{R}
+select.4 <- selection_dimensions(recup_compos_X, 2)
+select.4
+```
+```{r}
+select.4
+
+```
+Il semblerait que 4 ou 2 clusters semblent ce dégager.
+
+```{r, include=F, eval=T}
+analyse_clusters <- function(res.mbpls, donnees, n_dim, centers){
+  data_clust <- res.mbpls[,c(1:n_dim)] #x premières composantes récupérées pour la suite de la classification
+  data_clust.scaled <- scale(data_clust) # centrer
+
+
+  #perform k-means clustering with k = x clusters (x=centers)
+  res.km <- kmeans(data_clust.scaled, centers = centers, nstart = 25)
+
+
+  #plot results of final k-means model
+  resultat.2dim <- fviz_cluster(res.km, data = data_clust.scaled,
+              geom = "point",
+              ellipse.type = "convex", 
+              ggtheme = theme_bw()
+              )
+
+  data.avec_cl <- cbind(donnees, res.km$cluster)
+  nom.clust <- paste0("cluster_km", n_dim)
+  names(data.avec_cl) <- c(names(donnees), nom.clust)
+
+  data.avec_clb <- data.frame(data.avec_cl)
+
+  #déclarer la variable cluster_km en facteur
+  data.avec_clb[[nom.clust]] <- as.factor(data.avec_clb[[nom.clust]])
+
+  data.table <- kable(table1(as.formula(paste("~ . |", nom.clust)), data = data.avec_clb))
+
+  data.dsc <- catdes(data.avec_clb, num.var = ncol(data.avec_clb), proba =0.05)$category
+
+  
+
+  cluster_list <- list()
+  for (i in 1:centers) {
+    cluster_list[[paste("cluster", i, sep = "_")]] <- as.data.frame(data.dsc[[as.character(i)]])
+    cluster_list[[paste("cluster", i, sep = "_")]] <- as.data.frame(cluster_list[[paste("cluster", i, sep = "_")]], rownames = "Variable")
+  }
+  file_path <- paste0("mb-pls/Clusters_km", paste0(n_dim, ".xlsx"))
+  # write_xlsx(cluster_list, file_path, col_names = TRUE, format_headers = TRUE, use_zip64 = FALSE)
+  
+  return(list("res.km"=res.km,
+               "plot.km"=resultat.2dim,
+               "res.table"=data.table,
+               "res.catdes"=data.dsc))
+
+}
+```
+
+### Hdbscan
+
+```{r, include=F, eval=T}
+clasif.hdbscan <- function(res.mbpls, n_dim) {
+  # Extract the first n_dim components from the res.mbpls object
+  data_clust <- res.mbpls[, c(1:n_dim)]
+  data_clust.scaled <- scale(data_clust)  # Scale the data
+
+  # Apply HDBSCAN clustering
+  hdbscan_result <- hdbscan(data_clust.scaled, minPts = 5)  # minPts is a key parameter for HDBSCAN
+
+  # Visualize the clustering results
+  plot(data_clust.scaled, col = hdbscan_result$cluster + 1, pch = 20, main = "HDBSCAN Clustering")
+  legend("topright", legend = unique(hdbscan_result$cluster), col = unique(hdbscan_result$cluster + 1), pch = 20)
+
+  # Return the HDBSCAN result for further inspection
+  return(hdbscan_result)
+}
+```
+```{R}
+res.hdb.4 <- clasif.hdbscan(recup_compos_X, 4)
+res.hdb.4
+```
+
+56 élevages non pris classifiés.
+
+### Modèle de mèlanges gaussien
+
+Justification choix de modèle : 
+* Contrairement à k-NN, qui se base uniquement sur la proximité des points dans l'espace, GMM peut mieux gérer les cas où les classes ne sont pas séparées de manière nette mais ont des distributions chevauchantes.
+* moins suceptible au fléau de a dimension que knn
+* On ne suppose rien : volume, orientation, variance 
+### 2 dimensions
+```{R}
+par(mfrow = c(1, 1))
+
+X.2 <- res.mbpls2$lX[, 1:2]  
+fit <- Mclust(X.2, G = 1:10)
+plot(fit, "BIC")
+```
+
+### 4 dimensions
+
+```{R}
+X.4 <- res.mbpls2$lX[, 1:4]  
+models <- Mclust(X.4, G = 1:10)
+plot(models, "BIC")
+
+```
+
+Meilleur modèle : EEE, G = 3. 
+Deuxième meilleur: EVE, G=5.
+
+# EEE
+
+```{R, fig.width=10, fig.height=6}
+# Choix nombre clusters
+gmm_model <- Mclust(X.4, G = 3, modelNames = "EEE")
+
+clusters <- gmm_model$classification
+summary(factor(clusters))
+
+# Création de la grille 2D avec noms originaux
+original_names <- colnames(recup_compos_X)[1:2]
+
+grid <- expand.grid(
+  seq(min(X.4[,1]), max(X.4[,1]), length.out = 100),
+  seq(min(X.4[,2]), max(X.4[,2]), length.out = 100),
+  median(X.4[,3]),
+  median(X.4[,4])
+)
+colnames(grid) <- original_names
+
+# Prédiction
+grid_probs <- predict(gmm_model, newdata = grid)$z
+
+# Données pour les points
+plot_func <- function(cluster) {
+  
+    grid$prob_cluster <- grid_probs[, cluster]
+    
+    # Data for points
+    plot_data <- data.frame(
+      X.4[, 1:2], 
+      modalite = factor(data.clean$y, levels = c("ENG_malade", "PS_malade", "Sain"))
+    )
+    colnames(plot_data)[1:2] <- original_names[1:2]
+    
+    # Create plot
+    print(ggplot(grid, aes_string(x = original_names[1], y = original_names[2])) +
+      geom_raster(aes(fill = prob_cluster), interpolate = TRUE) +
+      geom_contour(aes(z = prob_cluster), color = "black", bins = 10) +
+      scale_fill_gradient(low = rgb(0,0,0,0), high = rgb(0,1,0,0.15)) +
+      geom_point(
+        data = plot_data, 
+        aes_string(x = original_names[1], y = original_names[2], color = "modalite"),
+        size = 1.75
+      ) +
+      scale_color_manual(
+        values = c("ENG_malade" = "#A52A2A", "PS_malade" = "#CD6600", "Sain" = "#458B74")
+      ) +
+      labs(x = "Axe 1 mb-pls", y = "Axe 2 mb-pls") +
+      theme_minimal() + 
+      guides(fill = guide_legend(title = paste("Cluster", cluster))))
+    
+
+}
+plot_func(1)
+
+plot_func(2)
+
+plot_func(3)
+
+```
+
+### Test des hyp : Normalité
+```{R, fig.width=10, fig.height=6}
+plot_qq <- function(component, comp_name) {
+  qqnorm(component, main = paste("Q-Q de ", comp_name), cex.main=1.5)
+  qqline(component, col = "red", lwd = 2)
+}
+
+norm_test  <- function(component, comp_name) {
+  shapiro_test <- shapiro.test(component)
+  print(paste(comp_name, "Shapiro-Wilk test p-value:", shapiro_test$p.value))
+}
+
+# Normalité des clusters
+res.mb <- data.frame(cbind(X.4, factor(clusters)))
+colnames(res.mb) <- c("Ax1", "Ax2", "Ax3", "Ax4", "clust")
+par(mfrow = c(3, 4))
+
+for (j in 1:3){
+  for (i in 1:4) {
+  plot_qq(res.mb[res.mb$clust==j,][, i], paste(paste(paste("Axe", i), "Cluster"), j))
+  }
+}
+for (j in 1:3){
+  for (i in 1:4) {
+  norm_test(res.mb[res.mb$clust==j,][, i], paste(paste(paste("Axe", i), "Cluster"), j))
+  }
+}
+
+data_avec_clusters <- data.frame(data.clean, clusters = factor(clusters))
+
+kable(table1(as.formula(~ . | clusters), data = data_avec_clusters))
+catdes(data_avec_clusters, num.var = ncol(data_avec_clusters), proba =0.05)$category
+```
+
+La variable y ne constitue pas un critère de discrimination des clusters. On passe au deuxième meilleur modèle.
+
+# EVE
+
+```{R}
+# Choix nombre clusters
+gmm_model <- Mclust(X.4, G = 5, modelNames = "EVE")
+
+clusters <- gmm_model$classification
+summary(factor(clusters))
+
+# Prédiction
+grid_probs <- predict(gmm_model, newdata = grid)$z
+for (cluster in 1:5) { 
+  plot_func(cluster)
+  
+}
+```
+
+### Test des hyp : Normalité
+```{R, fig.width=10, fig.height=10}
+res.mb <- data.frame(cbind(X.4, factor(clusters)))
+colnames(res.mb) <- c("Ax1", "Ax2", "Ax3", "Ax4", "clust")
+plot_qq <- function(component, comp_name) {
+  qqnorm(component, main = paste("Q-Q de ", comp_name), cex.main=2.2, cex.lab=2.2, cex.axis=1.2)
+  qqline(component, col = "red", lwd = 2)
+}
+par(mfrow = c(5, 4))
+par(mar = c(5, 6, 4, 2))
+for (j in 1:5){
+  for (i in 1:4) {
+  plot_qq(res.mb[res.mb$clust==j,][, i], paste(paste(paste("Axe", i), "Cluster"), j))
+  }
+}
+par(mar = c(5, 4, 4, 2))  # Reset to default margins
+
+
+for (j in 1:5){
+  for (i in 1:4) {
+  norm_test(res.mb[res.mb$clust==j,][, i], paste(paste(paste("Axe", i), "Cluster"), j))
+  }
+}
+data_with_clusters <- data.frame(data.clean, clusters = factor(clusters))
+
+kable(table1(as.formula(~ . | clusters), data = data_with_clusters))
+
+catdes(data_with_clusters, num.var = ncol(data_with_clusters), proba =0.05)$category
+```
+
+# Analyse Clusters
+
+Les modalités retenues pour caractériser les différents clusters sont celles dont la p-value est inférieure à 0,05, ce qui rend compte d’une corrélation avec le cluster.
+
+Le cluster 1 suggère que si des antibiotiques sont disponibles en engraissement contre la toux, alors ils ne le sont pas en post-sevrage, et inversement. Cela semble cohérent, car une prise d’antibiotiques est souvent suffisante compte tenu de l’espérance de vie des cochons en élevage.
+
+Le cluster 2 ne présente pas d’information utile dans le cadre de notre projet.
+
+Le cluster 3 permet de caractériser les porcs malades en engraissement. Ces porcs ont généralement reçu des antibiotiques contre la toux, que ce soit en post-sevrage ou en engraissement. Ceci est cohérent si l’on considère que l’éleveur les administre après avoir constaté la maladie. Il est d’ailleurs possible qu’un cochon ait développé la maladie et reçu les antibiotiques en post-sevrage, puis que la maladie ait également été constatée en engraissement, le temps que les antibiotiques fassent effet. On peut également constater, dans les élevages hébergeant ces porcs, la présence de trous dans la cloison, ou encore l’absence de lavage de matériel, avec un milieu dégradé (sol sale et/ou humide). Ce manquement sanitaire semble être un facteur du développement des maladies respiratoires chez les porcs. (À noter que les porcs semblent être davantage malades dans les élevages labellisés.)
+
+Quant au cluster 4, il permet de caractériser les cochons sains. Ces derniers ont également pu recevoir des antibiotiques en engraissement, ce qui semble s’interpréter dorénavant comme des porcs ayant vaincu la maladie, ou alors comme une administration préventive d’antibiotiques. Une donnée plus intéressante concerne l’alimentation des porcs sains, puisqu’ils sont nourris avec des produits locaux (issus de la ferme). Notons également que, pour ces porcs, le lavage du matériel est effectué une fois par semaine.
+
+Finalement, le cluster 5 nous donne des renseignements sur les individus malades en post-sevrage. Il met en évidence des prédispositions dans le développement des maladies respiratoires chez le porc portant la génétique Large White*Landrace. 
+
+On peut ainsi conclure que les maladies en post-sevrage semblent avoir une cause génétique, tandis qu’en engraissement, les raisons sont principalement la qualité de l’alimentation des porcs ainsi que l’insalubrité de l’environnement.

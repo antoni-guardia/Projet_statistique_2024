@@ -1,0 +1,358 @@
+---
+title: "PIGAL - Analyse PLS multiblocs suivie d'une classification k-means des variables respiratoires"
+author: "Christelle FABLET"
+date: "`r Sys.Date()`"
+output:
+  prettydoc::html_pretty:
+  theme: "architect"
+highlight: github
+number_sections: TRUE
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{=html}
+<style type="text/css">
+  body{
+    font-size: 5pt;
+  }
+</style>
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+**Packages**
+
+```{r error=FALSE, message=FALSE, warning=FALSE}
+# chargement des packages nécessaires pour la suite
+library(fastDummies)
+library(ade4)
+library(factoextra)
+library(cluster)
+library(knitr)
+library(table1)
+library(FactoMineR)
+library(dplyr)
+library(writexl)
+
+```
+
+
+```{r, echo = T, warning = F, message = F, eval = T, include = F}
+rm(list=ls())
+setwd("/home/rogerbernat/Documents/Projet_Stat_2025_modelisation")
+```
+
+**Charger les données**
+
+```{r, echo = T, warning = F, message = F, eval = T, include = F}
+
+donnees <- readRDS("data_post_etape_4_Forest.Rdata")
+
+```
+
+## \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+#Analyse multiblocs - 21 variables X et une variable Y
+
+## \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_
+
+data.clean = fichier contenant 21 variables X et une variable Y.
+
+
+```{r, echo = T, warning = F, message = F, eval = T, include = F}
+set.seed(1234567)
+
+# suppression variable code elevage
+data.clean <- donnees[-1]
+colnames(data.clean)
+rownames(data.clean) <- donnees$code_elevage
+noms.ligne <- donnees$code_elevage
+```
+
+*Etape 1* 
+
+On réalise le découpage par les blocs en accord avec le fichier variables_Sujet_22_envoi.xlsx
+
+```{r, echo = T, warning = F, message = F}
+X01_Logement_Entretien <- data.clean[, c("X22x1_LOC_INF_rec", "X07x1_AN_CONST4_mean_3", "ENG_TROU", "T13_ENG_milieuDegrad.x")]
+X02_Alimentation <- data.clean[, c("T10_PS_EauDebi_3", "T10_PS_AlimPoNourrLongpPo", "X09x3_FAB_CROISS_reg_rec")]
+X03_Gestion_Maladies <- data.clean[, c("X18x2_ABBTX_PS", "X19x2_ABB_E")]
+X04_Biosecurite <- data.clean[, c("X12x2_MAT_PC", "X12x2_MAT1FRLAV_1", "T16_BS_TenueSpeciElev", "X13x2_QUAI_t")]
+X05_Facteurs_Infectieux <- data.clean[, c("A03_Pos10sVERS", "A03_PosSeroMyAs", "A03_TxPosSero22sTgReel", "A04_My10Mfloc", "A05_TxPos10sGRIPPEReel")]
+X06_Caracteristiques_Generales <- data.clean[, c("X06x1_gene_majo_1_rec", "X25x1_ElvAlterChoiPers", "LR_LRF")]
+```
+
+*Etape 2*
+
+Création des dummy (ie binaires) variables avec le package fastDummies. La variable prise en référence correspond à celle dont l'effectif de réponse est le plus élevé.
+
+```{r, echo = T, warning = F, message = F}
+
+data <- list(X01_Logement_Entretien, X02_Alimentation, X03_Gestion_Maladies, X04_Biosecurite, X05_Facteurs_Infectieux, X06_Caracteristiques_Generales)
+
+for(i in 1:length(data)){
+  df <- data[[i]]
+  for(var in names(df)){
+    if(is.factor(df[[var]])){
+      df <- dummy_cols(df, var, remove_selected_columns = TRUE, remove_most_frequent_dummy = TRUE)
+    }
+  }
+  data[[i]] <- df
+}
+```
+
+*Etape 3* 
+La variable Y est en 3 modalités donc elle est également recodée en dummy variables selon le code indiqué ci-dessous.
+Introduction de la variable Y codée en 3 dummy (ie transformation de Y en 3 variables binaires) variables :
+
+```{r, echo = T, warning = F, message = F}
+dummy_y <- data.frame(y = data.clean$y)
+
+# Create des 3 Y
+dummy_y$sain <- as.integer(dummy_y$y == "Sain")
+dummy_y$ps_malade <- as.integer(dummy_y$y == "PS_malade")
+dummy_y$eng_malade <- as.integer(dummy_y$y == "ENG_malade")
+
+#suppression de y, la variable Y initiale, qui a été récodée en 3 niveaux Y
+dummy_y <- dummy_y[,-1] 
+summary(dummy_y) 
+# Vérifions que la moyenne vaut bien 1 
+sum(unlist(lapply(dummy_y, mean))) == 1
+```
+
+*Etape 4* 
+Création d'un bloc pour la variable Y codée en dummy variables.
+
+```{r}
+# on ne prendra pas le plus fréquent ie eng_malade
+summary(dummy_y)
+
+#création d'un vecteur Y
+bloc.Y <- dummy_y[,1:2]
+
+data[[7]] <- bloc.Y
+```
+
+*Etape 5* 
+
+Renommer les blocs:
+
+```{r, echo = T, warning = F, message = F}
+
+new_names <- c("X01_Logement_Entretien", "X02_Alimentation", "X03_Gestion_Maladies", "X04_Biosecurite", "X05_Facteurs_Infectieux", "X06_Caracteristiques_Generales", "Bloc_Y")
+names(data) <- new_names
+```
+
+*Etape 6* 
+
+**PASSAGE à l'analyse mbPLS**
+
+## Préparation des données
+
+```{r, echo = T, warning = F, message = F}
+Y <- data[[7]]
+
+row.names(Y)<-rownames(data[[1]])
+#renommer les lignes du nouveau Y par les numéros des data 1 à 7 car Y prend le code elevage (PIGAL/ELEV/01...) alors que les autres fichiers ont un numéro d'ordre (perte du code_elevage); sans cela le code d'après bloque #à voir si cette étape est nécessaire dans votre code selon la configuration de votre fichier.
+dudiY.ergo <- dudi.pca(Y, center = TRUE, scale = TRUE, scannf = FALSE)
+ktabX.ergo <- ktab.list.df(data[1:6])
+```
+
+## mbPLS
+
+```{r, echo = T, warning = F, message = F}
+res.mbpls2   <- mbpls(dudiY.ergo, ktabX.ergo, scale = T, option = "uniform", scannf = FALSE, nf = 10)
+
+
+res.2foldcv2 <- testdim(res.mbpls2, nrepet = 500)  # calcul long
+
+
+###########
+
+# Remplacer les NaN par NA pour éviter les erreurs
+rmsec_values <- res.2foldcv2$statsRMSEc$Mean
+rmsec_values[is.nan(rmsec_values)] <- NA
+
+# Définir les limites de l'axe Y pour inclure les deux courbes
+ylim_range <- range(c(res.2foldcv2$statsRMSEv$Mean, rmsec_values), na.rm = TRUE)
+
+# Tracer la courbe d'erreur de validation (rouge)
+plot(1:23, res.2foldcv2$statsRMSEv$Mean, type = "b", pch = 16, col = "red",
+     xlab = "Nombre de dimensions", ylab = "Erreur (RMSE)", ylim = ylim_range,
+     main = "Validation croisée 2-fold (Erreur en fonction des dimensions)")
+
+# Ajouter la courbe d'erreur d'apprentissage (bleue)
+lines(1:23, rmsec_values, type = "b", pch = 16, col = "blue")
+
+# Ajouter la légende
+legend("topright", legend = c("Erreur validation", "Erreur apprentissage"),
+       col = c("red", "blue"), pch = 16, lty = 1)
+```
+
+NB : les variables X sont centrées et réduites à ce niveau
+
+
+# Récupération des composantes de tous les axes pour réaliser une classification k-means à partir de ces composantes
+
+
+
+```{r, echo = T, warning = F, message = F}
+#pour les X
+recup_compos_X<-res.mbpls2$lX
+#pour les Y
+recup_compos_Y<-res.mbpls2$lY
+```
+
+```{r}
+selection_dimensions <- function(res.mbpls, n_dim){
+  #composantes du bloc X
+  data_clust <- res.mbpls[,c(1:n_dim)] #x premières composantes récupérées pour la suite de la classification
+  data_clust.scaled <- scale(data_clust) # centrer
+
+  #calculate gap statistic based on number of clusters
+  gap_stat <- clusGap(data_clust.scaled,
+                      FUN = kmeans,
+                      nstart = 25,
+                      K.max = 12,
+                      B = 150)
+
+  #plot number of clusters vs. gap statistic
+  return(fviz_gap_stat(gap_stat))
+}
+
+analyse_clusters <- function(res.mbpls, donnees, n_dim, centers){
+  data_clust <- res.mbpls[,c(1:n_dim)] #x premières composantes récupérées pour la suite de la classification
+  data_clust.scaled <- scale(data_clust) # centrer
+
+
+  #perform k-means clustering with k = x clusters (x=centers)
+  res.km <- kmeans(data_clust.scaled, centers = centers, nstart = 25)
+
+
+  #plot results of final k-means model
+  resultat.2dim <- fviz_cluster(res.km, data = data_clust.scaled,
+              geom = "point",
+              ellipse.type = "convex", 
+              ggtheme = theme_bw()
+              )
+
+  data.avec_cl <- cbind(donnees, res.km$cluster)
+  nom.clust <- paste0("cluster_km", n_dim)
+  names(data.avec_cl) <- c(names(donnees), nom.clust)
+
+  data.avec_clb <-data_frame(data.avec_cl)
+
+  #déclarer la variable cluster_km en facteur
+  data.avec_clb[[nom.clust]] <- as.factor(data.avec_clb[[nom.clust]])
+
+  data.table <- kable(table1(as.formula(paste("~ . |", nom.clust)), data = data.avec_clb))
+
+  data.dsc <- catdes(data.avec_clb, num.var = ncol(data.avec_clb), proba =0.05)$category
+
+  
+
+  cluster_list <- list()
+  for (i in 1:centers) {
+    cluster_list[[paste("cluster", i, sep = "_")]] <- as.data.frame(data.dsc[[as.character(i)]])
+    cluster_list[[paste("cluster", i, sep = "_")]] <- dplyr::as_data_frame(cluster_list[[paste("cluster", i, sep = "_")]], rownames = "Variable")
+  }
+  file_path <- paste0("mb-pls/Clusters_km", paste0(n_dim, ".xlsx"))
+  write_xlsx(cluster_list, file_path, col_names = TRUE, format_headers = TRUE, use_zip64 = FALSE)
+  
+  return(list("res.km"=res.km,
+               "plot.km"=resultat.2dim,
+               "res.table"=data.table,
+               "res.catdes"=data.dsc))
+
+}
+
+choix_dim_et_res <- function(res.mbpls, donnees, n_dim, centers=NULL){
+  sel.dim <- selection_dimensions(res.mbpls, n_dim)
+
+  if (is.null(centers)) {
+    
+    centers <- as.integer(readline(prompt = "Please input the number of clusters you want to use: "))
+    
+  }
+
+  an.cl <- analyse_clusters(res.mbpls, donnees, n_dim, centers)
+
+  return(list( "plot.opti_cluster"=sel.dim,
+               "analyse"=an.cl))
+
+}
+```
+
+# Réaliser une classification k-means à partir des deux premières dimensions
+
+```{r}
+res <- choix_dim_et_res(res.mbpls=recup_compos_X,
+                        donnees=data.clean,
+                        n_dim=2,
+                        centers=4)
+
+res$plot.opti_cluster
+res$analyse$plot.km
+res$analyse$res.table
+res$analyse$res.catdes
+```
+## Intérpretation
+
+### Bloc 1
+
+Dans ce groupe, 80 % des porcs (20 sur 25) sont classés en PS_malade, bien au-dessus de la moyenne globale de 31 %. En revanche, seuls 16 % (4 sur 25) présentent le profil ENG_malade, et seulement 4 % (1 sur 25) sont sains. Ce déséquilibre fort indique une surreprésentation de la catégorie PS_malade. Par ailleurs, des variables telles que X09x3_FAB_CROISS_reg_rec (lieu de fabrication de l’aliment de croissance) et les pratiques d’hygiène semblent orienter ce groupe vers des conditions spécifiques, potentiellement liées à des pratiques d’alimentation ou d’entretien qui favorisent ce profil particulier.
+
+### Bloc 2
+
+Ici, la répartition est plus équilibrée avec 38,1 % de porcs sains (8 sur 21) et 38,1 % de PS_malade (8 sur 21), tandis que 23,8 % (5 sur 21) présentent le profil ENG_malade. Cette distribution se rapproche de la moyenne globale, mais révèle une légère sous-représentation des ENG_malade (23,8 % vs. 40 % globalement) et une tendance à l’équilibre entre les porcs sains et ceux classés PS_malade. Cela suggère que dans ce groupe, la gestion de l’alimentation (X09x3_FAB_CROISS_reg_rec) et des conditions de logement (ex. partage du matériel, X12x2_MAT_PC) est moins extrême, induisant une hétérogénéité dans l’état de santé.
+
+### Bloc 3
+
+Ce bloc se caractérise par une nette prédominance des porcs sains, qui représentent 77,8 % (14 sur 18) contre seulement 5,6 % de PS_malade (1 sur 18) et 16,7 % d’ENG_malade (3 sur 18). Comparé aux moyennes globales, le pourcentage de porcs sains est largement supérieur (77,8 % vs. 29 % globalement), tandis que les profils malades sont fortement sous-représentés. Ce constat indique que les pratiques liées à l’alimentation, au logement et à la biosécurité (ex. nettoyage du quai X13x2_QUAI_t, lavage du matériel X12x2_MAT1FRLAV_1) sont optimisées, contribuant à une excellente santé animale.
+
+### Bloc 4
+
+Ici, le profil ENG_malade domine avec 77,8 % des cas (28 sur 36), ce qui est presque le double de la moyenne globale de 40 %. À l’inverse, le profil PS_malade n’est présent qu’à 5,6 % (2 sur 36) et les porcs sains représentent 16,7 % (6 sur 36). Cette forte surreprésentation des ENG_malade peut être liée à des facteurs environnementaux défavorables, tels qu’un milieu dégradé en engraissement (T13_ENG_milieuDegrad.x) et des infrastructures défaillantes (par exemple, la présence d’un trou dans la cloison, ENG_TROU). De plus, l’usage accru d’antibiotiques en cas de besoin (X19x2_ABB_E) reflète la nécessité de compenser ces conditions moins favorables, indiquant un besoin d’améliorer les protocoles de gestion et d’hygiène dans ce bloc.
+
+# Réaliser une classification k-means à partir des 3 premières dimensions
+
+```{r}
+res <- choix_dim_et_res(res.mbpls=recup_compos_X,
+                        donnees=data.clean,
+                        n_dim=3,
+                        centers=6)
+res$plot.opti_cluster
+res$analyse$plot.km
+res$analyse$res.table
+res$analyse$res.catdes
+```
+
+# Réaliser une classification k-means à partir des 4 premières dimensions
+
+```{r}
+res <- choix_dim_et_res(res.mbpls=recup_compos_X,
+                        donnees=data.clean,
+                        n_dim=4,
+                        centers=3)
+res$plot.opti_cluster
+res$analyse$plot.km
+res$analyse$res.table
+res$analyse$res.catdes
+```
+
+# Réaliser une classification k-means à partir des 5 premières dimensions
+
+```{r}
+res <- choix_dim_et_res(res.mbpls=recup_compos_X,
+                        donnees=data.clean,
+                        n_dim=5,
+                        centers=3)
+res$plot.opti_cluster
+res$analyse$plot.km
+res$analyse$res.table
+res$analyse$res.catdes
+```
